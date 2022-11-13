@@ -74,7 +74,7 @@ if __name__ == '__main__':
         parser.add_argument("-a", "--action", help="Action")
         parser.add_argument("-t", "--type", help="Type")
         parser.add_argument("-f", "--file", help="File")
-        parser.add_argument("-c", "--config", help="Config YAML File", default="/home/jam/VoterWarehouse.yml")
+        parser.add_argument("-c", "--config", help="Config YAML File", default="/etc/VoterWarehouse/config.yml")
         main(parser.parse_args())
     except Exception as e:
         print('Caught this error: ' + repr(e))
