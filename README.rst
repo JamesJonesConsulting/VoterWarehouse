@@ -26,28 +26,18 @@ application is extendable by design).
 Command line syntax
 ^^^^^^^^^^^^^^^^^^^
 
-+------+---------------------------------------------------------------+
-| Comm | Function                                                      |
-| and/ |                                                               |
-| Argu |                                                               |
-| ment |                                                               |
-+======+===============================================================+
-| -a / | [Required] Main ‘action’, currently support ‘import’          |
-| –ac  |                                                               |
-| tion |                                                               |
-+------+---------------------------------------------------------------+
-| -t / | [Required] The ‘type’ of function voters/history              |
-| –    |                                                               |
-| type |                                                               |
-+------+---------------------------------------------------------------+
-| -f / | Specifies a file to import or export                          |
-| –    |                                                               |
-| file |                                                               |
-+------+---------------------------------------------------------------+
-| -c / | Config file in YAML format. If not provided, defaults to      |
-| –co  | ``/etc/VoterWarehouse/config.yml``                            |
-| nfig |                                                               |
-+------+---------------------------------------------------------------+
++------------------+----------------------------------------------------------+
+| Command/Argument | Function                                                 |
++==================+==========================================================+
+| -a / -action     | [Required] Main ‘action’, currently support ‘import’     |
++------------------+----------------------------------------------------------+
+| -t / -type       | [Required] The ‘type’ of function voters/history         |
++------------------+----------------------------------------------------------+
+| -f / -file       | Specifies a file to import or export                     |
++------------------+----------------------------------------------------------+
+| -c / -config     | Config file in YAML format. If not provided, defaults to |
+|                  | ``/etc/VoterWarehouse/config.yml``                       |
++------------------+----------------------------------------------------------+
 
 Example YAML Config file:
 
