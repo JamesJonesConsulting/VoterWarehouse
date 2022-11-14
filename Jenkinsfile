@@ -14,7 +14,7 @@ pipeline {
                 sh 'ansible-playbook ansible/playbook.yml -vvv'
                 sh '''
                 # Content omitted
-                echo ${GIT_BRANCH}
+                echo ${GIT_BRANCH#origin/}
                 # Content omitted
                 '''
             }
