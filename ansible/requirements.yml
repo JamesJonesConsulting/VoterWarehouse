@@ -1,0 +1,6 @@
+collections:
+- name: community.general
+- name: ansible.posix
+- name: community.docker
+- name: containers.podman
+- name: community.crypto
