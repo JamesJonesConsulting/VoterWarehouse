@@ -10,12 +10,10 @@ pipeline {
 //                 }
 //             }
             steps {
-                sh 'ansible-galaxy collection install -r ansible/requirements.yml'
-                sh 'ansible-playbook ansible/playbook.yml -vvv'
                 sh '''
-                # Content omitted
-                echo ${GIT_BRANCH#origin/}
-                # Content omitted
+                ansible-galaxy collection install -r ansible/requirements.yml
+                echo ${GIT_BRANCH#origin/} | sed -r 's|/|-|g'
+                ansible-playbook ansible/playbook.yml -vvv
                 '''
             }
         }
