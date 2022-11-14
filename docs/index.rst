@@ -23,6 +23,26 @@ I don’t have access to those monthly disks anymore… but if that changes
 and somebody ‘makes a deal’ with me… perhaps I’ll write it in as this is
 application is extendable by design).
 
+OK, let's get started... how do I get it?
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+For now, it just builds as a linux compatible binary and also RPM and DEB
+packages. There's still some work to do to setup GitLab, Azure DevOps, Jenkins
+and GitHub pipelines. I'll build it all ways.
+
+To build it the 'basic' way, clone the source and run
+
+.. code:: commandline
+
+    ./build.sh
+
+That will build the `voterwarehouse` binary and invoke docker to build
+the RPM and DEB packages.
+
+Next steps (for me) involve publishing a container to Dockerhub. After that, building
+out all the different pipelines. I'd imagine _if_ there's enough demand, I can
+create a Chocolatey package as well.
+
 Command line syntax
 ^^^^^^^^^^^^^^^^^^^
 
