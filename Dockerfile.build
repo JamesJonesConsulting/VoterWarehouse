@@ -1,0 +1,9 @@
+FROM fedora:latest
+
+ARG VERSION
+ARG ITERATION
+
+RUN dnf install -y rpm-build rpm-sign rubygems ruby-devel gcc make libffi-devel
+
+RUN gem install ffi \
+    && gem install fpm
