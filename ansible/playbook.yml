@@ -3,4 +3,9 @@
   become: yes
   vars_files:
     - ./vars/main.yml
-  tasks: []
+  tasks:
+    - name: Run the build tool
+      shell: |
+        ./build.sh
+      args:
+        chdir: ../
