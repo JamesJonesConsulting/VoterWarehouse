@@ -49,13 +49,13 @@ Command line syntax
 +------------------+----------------------------------------------------------+
 | Command/Argument | Function                                                 |
 +==================+==========================================================+
-| -a / -action     | [Required] Main ‘action’, currently support ‘import’     |
+| -a / --action    | [Required] Main ‘action’, currently support ‘import’     |
 +------------------+----------------------------------------------------------+
-| -t / -type       | [Required] The ‘type’ of function voters/history         |
+| -t / --type      | [Required] The ‘type’ of function voters/history         |
 +------------------+----------------------------------------------------------+
-| -f / -file       | Specifies a file to import or export                     |
+| -f / --file      | Specifies a file to import or export                     |
 +------------------+----------------------------------------------------------+
-| -c / -config     | Config file in YAML format. If not provided, defaults to |
+| -c / --config    | Config file in YAML format. If not provided, defaults to |
 |                  | ``/etc/VoterWarehouse/config.yml``                       |
 +------------------+----------------------------------------------------------+
 
