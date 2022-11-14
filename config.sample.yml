@@ -1,0 +1,9 @@
+---
+UnitedStates:
+  Florida:
+    database:
+      host: dbhostname.example.net
+      port: 3306
+      schema: FloridaVoters
+      user: dbuser
+      password: dbpassword
