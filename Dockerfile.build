@@ -3,7 +3,15 @@ FROM registry.fedoraproject.org/fedora:latest
 ARG VERSION
 ARG ITERATION
 
+echo '%wheel ALL=(ALL) NOPASSWD: ALL' > /etc/sudoers.d/wheel_grp_sudo; \
+addgroup -g 974 -S jenkins; \
+adduser -u 981 -G jenkins -h /home/jenkins -S jenkins; \
+sed -i 's/^\(wheel:.*\)/\1,jenkins/' /etc/group
+
 RUN dnf install -y rpm-build rpm-sign rubygems ruby-devel gcc make libffi-devel
 
 RUN gem install ffi \
     && gem install fpm
+
+USER jenkins
+WORKDIR /home/jenkins
