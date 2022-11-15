@@ -5,7 +5,7 @@ ARG ITERATION
 
 COPY config.sample.yml /tmp/config.yml
 
-RUN dnf install -y rpm-build rpm-sign rubygems ruby-devel gcc make libffi-devel
+RUN dnf install -y rpm-build rpm-sign rubygems ruby-devel gcc gcc-c++ make libffi-devel
 
 RUN gem install ffi \
     && gem install fpm

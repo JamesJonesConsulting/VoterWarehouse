@@ -8,7 +8,7 @@ addgroup -g 974 -S jenkins; \
 adduser -u 981 -G jenkins -h /home/jenkins -S jenkins; \
 sed -i 's/^\(wheel:.*\)/\1,jenkins/' /etc/group
 
-RUN dnf install -y rpm-build rpm-sign rubygems ruby-devel gcc make libffi-devel
+RUN dnf install -y rpm-build rpm-sign rubygems ruby-devel gcc gcc-c++ make libffi-devel
 
 RUN gem install ffi \
     && gem install fpm

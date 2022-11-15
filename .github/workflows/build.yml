@@ -7,11 +7,9 @@ env:
 #  ITERATION: $GITHUB_JOB
 
 jobs:
-  # Label of the container job
   build-job:
-    # Containers must run in Linux based operating systems
     runs-on: self-hosted
-    # Docker Hub image that `container-job` executes in
+    environment: home
     container:
       image: registry.fedoraproject.org/fedora:latest
       options: --userns=keep-id --privileged --user root
@@ -22,12 +20,14 @@ jobs:
 
       # Sets up RPM build tools and Ruby Gems
       - name: Install RPM dependencies
-        run: dnf install -y rpm-build rpm-sign rubygems ruby-devel gcc make libffi-devel python3
+        run: dnf install -y rpm-build rpm-sign rubygems ruby-devel gcc gcc-c++ make libffi-devel python3
       # Sets up Rubygems packaging
       - name: Setup FPM with it's dependent package for building a package
         run: |
           gem install ffi
           gem install fpm
+          gem install package_cloud
+          echo $PACKAGECLOUD_TOKEN
       # Sets up the python virtual environment, pulls the requirements and builds the binary
       - name: Build the binary
         run: |

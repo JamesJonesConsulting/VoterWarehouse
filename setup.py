@@ -12,9 +12,9 @@ with open('LICENSE') as f:
     license_content = f.read()
 
 setup(
-    name='sample',
+    name='voterwarehouse',
     version='3.0.0',
-    description='Sample package for Python-Guide.org',
+    description='Imports Voter and Voter Histories into a data warehouse',
     long_description=readme,
     author='James Jones',
     author_email='jamjon3@gmail.com',
