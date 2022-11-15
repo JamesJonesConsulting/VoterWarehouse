@@ -28,7 +28,7 @@ jobs:
           gem install package_cloud
           echo $PC_TOKEN | base64 -d > $HOME/.packagecloud
         env:
-          PC_TOKEN = ${{ secrets.PACKAGECLOUD_TOKEN }}
+          PC_TOKEN: ${{ secrets.PACKAGECLOUD_TOKEN }}
       # Sets up the python virtual environment, pulls the requirements and builds the binary
       - name: Build the binary
         run: |
@@ -46,6 +46,10 @@ jobs:
           -p dist \
           ./dist/voterwarehouse=/usr/bin/voterwarehouse \
           ./config.sample.yml=/etc/VoterWarehouse/config.yml
+          PACKAGE_FILE=$(find . -type f -name "voterwarehouse*.rpm")
+          package_cloud push $PACKAGE_CLOUD_REPO $PACKAGE_FILE
+        env:
+          PACKAGE_CLOUD_REPO: jamjon3/yum
       - name: Build the DEB package
         run: |
           fpm -s dir -t deb -n voterwarehouse -v ${VERSION} --iteration ${ITERATION} \
@@ -57,5 +61,7 @@ jobs:
           ./dist/voterwarehouse=/usr/bin/voterwarehouse \
           ./config.sample.yml=/etc/VoterWarehouse/config.yml
           PACKAGE_FILE=$(find . -type f -name "voterwarehouse*.deb")
-          package_cloud push jamjon3/consulting $PACKAGE_FILE
+          package_cloud push $PACKAGE_CLOUD_REPO $PACKAGE_FILE
+        env:
+          PACKAGE_CLOUD_REPO: jamjon3/consulting
     
