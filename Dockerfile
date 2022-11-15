@@ -1,6 +1,5 @@
 FROM fedora:latest
 
-ARG VERSION
 ARG ITERATION
 
 COPY config.sample.yml /tmp/config.yml
@@ -13,7 +12,8 @@ RUN gem install ffi \
 RUN rm -f /dist/*.{rpm,deb}
 
 # Build the RPM file
-RUN fpm -s dir -t rpm -n voterwarehouse -v ${VERSION} --iteration ${ITERATION} \
+RUN VERSION=$(/dist/voterwarehouse -v) &&
+    fpm -s dir -t rpm -n voterwarehouse -v ${VERSION} --iteration ${ITERATION} \
     --description "VoterWarehouse: Imports and Extracts Voter and History data" \
     --url "https://github.com/jamjon3/VoterWarehouse" \
     --license "LGPL3.0" --vendor "James Jones" \
@@ -23,7 +23,8 @@ RUN fpm -s dir -t rpm -n voterwarehouse -v ${VERSION} --iteration ${ITERATION} \
     /tmp/config.yml=/etc/VoterWarehouse/config.yml
 
 # Build the DEB file
-RUN fpm -s dir -t deb -n voterwarehouse -v ${VERSION} --iteration ${ITERATION} \
+RUN VERSION=$(/dist/voterwarehouse -v) &&
+    fpm -s dir -t deb -n voterwarehouse -v ${VERSION} --iteration ${ITERATION} \
     --description "VoterWarehouse: Imports and Extracts Voter and History data" \
     --url "https://github.com/jamjon3/VoterWarehouse" \
     --license "LGPL3.0" --vendor "James Jones" \

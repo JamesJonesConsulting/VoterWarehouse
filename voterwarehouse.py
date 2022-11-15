@@ -1,6 +1,12 @@
+# -*- coding: utf-8 -*-
+
+# VoterWarehouse command-line Voter and Voter History handling tool
+
 import os
 import argparse
 import pydoc
+from version import __version__
+
 
 implemented_states = [
     "Florida"
@@ -75,6 +81,7 @@ if __name__ == '__main__':
         parser.add_argument("-t", "--type", help="Type")
         parser.add_argument("-f", "--file", help="File")
         parser.add_argument("-c", "--config", help="Config YAML File", default="/etc/VoterWarehouse/config.yml")
+        parser.add_argument('-v', '--version', action='version', version=__version__)
         main(parser.parse_args())
     except Exception as e:
         print('Caught this error: ' + repr(e))

@@ -1,10 +1,7 @@
 name: Build VoterWarehouse
 on: push
 env:
-  VERSION: 1.0.0
-  ITERATION: 1
-#  VERSION: $GITHUB_REF_NAME
-#  ITERATION: $GITHUB_JOB
+  ITERATION: $GITHUB_JOB
 
 jobs:
   build-job:
@@ -27,8 +24,6 @@ jobs:
           gem install fpm
           gem install package_cloud
           echo $PC_TOKEN | base64 -d > ~/.packagecloud
-          
-          cat ~/.packagecloud
         env:
           PC_TOKEN: ${{ secrets.PACKAGECLOUD_TOKEN }}
       # Sets up the python virtual environment, pulls the requirements and builds the binary
@@ -40,6 +35,12 @@ jobs:
           python build.py
       - name: Build the RPM package
         run: |
+          if [[ "$GITHUB_REF" =~ ^refs/tags.* ]]; then
+            VERSION=$GITHUB_REF_NAME
+          else
+            VERSION=$(/dist/voterwarehouse -v)
+            VERSION+=$(echo "-${GITHUB_REF_NAME}" | sed 's|/|-|g')
+          fi
           fpm -s dir -t rpm -n voterwarehouse -v ${VERSION} --iteration ${ITERATION} \
           --description "VoterWarehouse: Imports and Extracts Voter and History data" \
           --url "https://github.com/jamjon3/VoterWarehouse" \
@@ -50,10 +51,17 @@ jobs:
           ./config.sample.yml=/etc/VoterWarehouse/config.yml
           PACKAGE_FILE=$(find . -type f -name "voterwarehouse*.rpm")
           package_cloud push $PACKAGE_CLOUD_REPO $PACKAGE_FILE
+        shell: bash
         env:
-          PACKAGE_CLOUD_REPO: jamjon3/yum/el/8
+          PACKAGE_CLOUD_REPO: jamjon3/yum/rpm_any/rpm_any
       - name: Build the DEB package
         run: |
+          if [[ "$GITHUB_REF" =~ ^refs/tags.* ]]; then
+            VERSION=$GITHUB_REF_NAME
+          else
+            VERSION=$(/dist/voterwarehouse -v)
+            VERSION+=$(echo "-${GITHUB_REF_NAME}" | sed 's|/|-|g')
+          fi
           fpm -s dir -t deb -n voterwarehouse -v ${VERSION} --iteration ${ITERATION} \
           --description "VoterWarehouse: Imports and Extracts Voter and History data" \
           --url "https://github.com/jamjon3/VoterWarehouse" \
@@ -64,6 +72,7 @@ jobs:
           ./config.sample.yml=/etc/VoterWarehouse/config.yml
           PACKAGE_FILE=$(find . -type f -name "voterwarehouse*.deb")
           package_cloud push $PACKAGE_CLOUD_REPO $PACKAGE_FILE
+        shell: bash
         env:
-          PACKAGE_CLOUD_REPO: jamjon3/consulting/ubuntu/jammy
+          PACKAGE_CLOUD_REPO: jamjon3/deb/any/any
     

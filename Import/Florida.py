@@ -1,3 +1,7 @@
+# -*- coding: utf-8 -*-
+
+# Handles Raw data import methods for FLorida data
+
 import datetime
 import zipfile
 import Warehouse.FloridaSQL

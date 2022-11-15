@@ -1,3 +1,7 @@
+# -*- coding: utf-8 -*-
+
+# Handles Database methods for FLorida data
+
 import yaml
 import pymysql
 import pymysql.cursors

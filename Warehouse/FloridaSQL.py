@@ -1,3 +1,6 @@
+# -*- coding: utf-8 -*-
+
+# Handles Database SQL methods for FLorida data
 
 def create_database(database) -> str:
     """
