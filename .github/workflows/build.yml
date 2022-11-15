@@ -9,7 +9,6 @@ env:
 jobs:
   build-job:
     runs-on: self-hosted
-    environment: home
     container:
       image: registry.fedoraproject.org/fedora:latest
       options: --userns=keep-id --privileged --user root
@@ -27,7 +26,9 @@ jobs:
           gem install ffi
           gem install fpm
           gem install package_cloud
-          echo $PACKAGECLOUD_TOKEN
+          echo $PC_TOKEN | base64 -d > $HOME/.packagecloud
+        env:
+          PC_TOKEN = ${{ secrets.PACKAGECLOUD_TOKEN }}
       # Sets up the python virtual environment, pulls the requirements and builds the binary
       - name: Build the binary
         run: |
@@ -55,4 +56,6 @@ jobs:
           -p dist \
           ./dist/voterwarehouse=/usr/bin/voterwarehouse \
           ./config.sample.yml=/etc/VoterWarehouse/config.yml
+          PACKAGE_FILE=$(find . -type f -name "voterwarehouse*.deb")
+          package_cloud push jamjon3/consulting $PACKAGE_FILE
     
