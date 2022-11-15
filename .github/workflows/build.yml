@@ -39,7 +39,7 @@ jobs:
             VERSION=$GITHUB_REF_NAME
           else
             VERSION=$(./dist/voterwarehouse -v)
-            VERSION+=$(echo "-${GITHUB_REF_NAME}" | sed 's|/|-|g')
+            VERSION+=$(echo "~${GITHUB_REF_NAME}" | sed 's|/|-|g')
           fi
           fpm -s dir -t rpm -n voterwarehouse -v ${VERSION} --iteration ${ITERATION} \
           --description "VoterWarehouse: Imports and Extracts Voter and History data" \
@@ -60,7 +60,7 @@ jobs:
             VERSION=$GITHUB_REF_NAME
           else
             VERSION=$(./dist/voterwarehouse -v)
-            VERSION+=$(echo "-${GITHUB_REF_NAME}" | sed 's|/|-|g')
+            VERSION+=$(echo "~${GITHUB_REF_NAME}" | sed 's|/|-|g')
           fi
           fpm -s dir -t deb -n voterwarehouse -v ${VERSION} --iteration ${ITERATION} \
           --description "VoterWarehouse: Imports and Extracts Voter and History data" \
