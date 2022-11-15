@@ -12,7 +12,7 @@ jobs:
     # Docker Hub image that `container-job` executes in
     container:
       image: registry.fedoraproject.org/fedora:latest
-      options: --privileged
+      options: --userns=keep-id
     steps:
       # Downloads a copy of the code in your repository before running CI tests
       - name: Check out repository code
