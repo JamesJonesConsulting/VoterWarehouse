@@ -38,7 +38,7 @@ jobs:
           if [[ "$GITHUB_REF" =~ ^refs/tags.* ]]; then
             VERSION=$GITHUB_REF_NAME
           else
-            VERSION=$(/dist/voterwarehouse -v)
+            VERSION=$(./dist/voterwarehouse -v)
             VERSION+=$(echo "-${GITHUB_REF_NAME}" | sed 's|/|-|g')
           fi
           fpm -s dir -t rpm -n voterwarehouse -v ${VERSION} --iteration ${ITERATION} \
@@ -59,7 +59,7 @@ jobs:
           if [[ "$GITHUB_REF" =~ ^refs/tags.* ]]; then
             VERSION=$GITHUB_REF_NAME
           else
-            VERSION=$(/dist/voterwarehouse -v)
+            VERSION=$(./dist/voterwarehouse -v)
             VERSION+=$(echo "-${GITHUB_REF_NAME}" | sed 's|/|-|g')
           fi
           fpm -s dir -t deb -n voterwarehouse -v ${VERSION} --iteration ${ITERATION} \
