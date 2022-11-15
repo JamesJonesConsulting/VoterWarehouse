@@ -8,10 +8,11 @@ jobs:
   # Label of the container job
   build-job:
     # Containers must run in Linux based operating systems
-    runs-on: [self-hosted, linux, big-build]
+    runs-on: self-hosted
     # Docker Hub image that `container-job` executes in
-    container: registry.fedoraproject.org/fedora:latest
-
+    container:
+      image: registry.fedoraproject.org/fedora:latest
+      options: --privileged
     steps:
       # Downloads a copy of the code in your repository before running CI tests
       - name: Check out repository code
