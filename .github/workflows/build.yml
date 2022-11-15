@@ -51,7 +51,7 @@ jobs:
           PACKAGE_FILE=$(find . -type f -name "voterwarehouse*.rpm")
           package_cloud push $PACKAGE_CLOUD_REPO $PACKAGE_FILE
         env:
-          PACKAGE_CLOUD_REPO: jamjon3/yum
+          PACKAGE_CLOUD_REPO: jamjon3/yum/el/8
       - name: Build the DEB package
         run: |
           fpm -s dir -t deb -n voterwarehouse -v ${VERSION} --iteration ${ITERATION} \
@@ -65,5 +65,5 @@ jobs:
           PACKAGE_FILE=$(find . -type f -name "voterwarehouse*.deb")
           package_cloud push $PACKAGE_CLOUD_REPO $PACKAGE_FILE
         env:
-          PACKAGE_CLOUD_REPO: jamjon3/consulting
+          PACKAGE_CLOUD_REPO: jamjon3/consulting/ubuntu/jammy
     
