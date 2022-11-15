@@ -1,0 +1,45 @@
+name: Build VoterWarehouse
+on: push
+env:
+  VERSION: $GITHUB_REF_NAME
+  ITERATION: $GITHUB_JOB
+
+jobs:
+  # Label of the container job
+  build-job:
+    # Containers must run in Linux based operating systems
+    runs-on: [self-hosted, Linux, big-build]
+    # Docker Hub image that `container-job` executes in
+    container: registry.fedoraproject.org/fedora:latest
+
+steps:
+  # Downloads a copy of the code in your repository before running CI tests
+  - name: Check out repository code
+    uses: actions/checkout@v3
+
+  # Sets up RPM build tools and Ruby Gems
+  - name: Install RPM dependencies
+    run: dnf install -y rpm-build rpm-sign rubygems ruby-devel gcc make libffi-devel
+  # Sets up Rubygems packaging
+  - name: Setup FPM with it's dependent package for building a package
+    run: |
+      gem install ffi
+      gem install fpm
+  # Sets up the python virtual environment, pulls the requirements and builds the binary
+  - name: Build the binary
+    run: |
+      python -m venv venv
+      source venv/bin/activate
+      python -m pip install -r requirements.txt
+      python build.py
+  - name: Build the RPM package
+    run: |
+      fpm -s dir -t rpm -n voterwarehouse -v ${VERSION} --iteration ${ITERATION} \
+      --description "VoterWarehouse: Imports and Extracts Voter and History data" \
+      --url "https://github.com/jamjon3/VoterWarehouse" \
+      --license "LGPL3.0" --vendor "James Jones" \
+      --config-files /etc/VoterWarehouse/config.yml \
+      -p dist \
+      ./dist/voterwarehouse=/usr/bin/voterwarehouse \
+      ./config.sample.yml=/etc/VoterWarehouse/config.yml
+
