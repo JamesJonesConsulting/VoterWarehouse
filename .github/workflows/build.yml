@@ -20,7 +20,7 @@ jobs:
 
       # Sets up RPM build tools and Ruby Gems
       - name: Install RPM dependencies
-        run: dnf install -y rpm-build rpm-sign rubygems ruby-devel gcc make libffi-devel
+        run: dnf install -y rpm-build rpm-sign rubygems ruby-devel gcc make libffi-devel python3
       # Sets up Rubygems packaging
       - name: Setup FPM with it's dependent package for building a package
         run: |
