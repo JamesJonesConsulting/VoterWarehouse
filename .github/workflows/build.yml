@@ -1,7 +1,5 @@
 name: Build VoterWarehouse
 on: push
-env:
-  ITERATION: ${{ env.GITHUB_JOB }}
 
 jobs:
   build-job:
@@ -44,8 +42,8 @@ jobs:
             VERSION+=$(echo "~${GITHUB_REF_NAME}" | sed 's|/|-|g')
           fi
           echo "$VERSION"
-          echo "$ITERATION"
-          fpm -s dir -t rpm -n voterwarehouse -v ${VERSION} --iteration ${ITERATION} \
+          echo "$GITHUB_JOB"
+          fpm -s dir -t rpm -n voterwarehouse -v ${VERSION} --iteration ${GITHUB_JOB} \
           --description "VoterWarehouse: Imports and Extracts Voter and History data" \
           --url "https://github.com/jamjon3/VoterWarehouse" \
           --license "LGPL-3.0" --vendor "James Jones" \
@@ -67,8 +65,8 @@ jobs:
             VERSION+=$(echo "~${GITHUB_REF_NAME}" | sed 's|/|-|g')
           fi
           echo "$VERSION"
-          echo "$ITERATION"
-          fpm -s dir -t deb -n voterwarehouse -v ${VERSION} --iteration ${ITERATION} \
+          echo "$GITHUB_JOB"
+          fpm -s dir -t deb -n voterwarehouse -v ${VERSION} --iteration ${GITHUB_JOB} \
           --description "VoterWarehouse: Imports and Extracts Voter and History data" \
           --url "https://github.com/jamjon3/VoterWarehouse" \
           --license "LGPL-3.0" --vendor "James Jones" \
