@@ -46,7 +46,7 @@ create a Chocolatey package as well.
 Installing from Packagecloud (prebuilt package)
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-The Gitlab Actions publish the DEB and RPM files to Packagecloud so you can easily install the
+The Github Actions publish the DEB and RPM files to Packagecloud so you can easily install the
 on Debian and RHEL'ish systems.
 
 Any RPM based (RHEL'ish) system to install the YUM repo and the package
