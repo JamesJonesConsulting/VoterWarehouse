@@ -42,8 +42,8 @@ jobs:
             VERSION+=$(echo "~${GITHUB_REF_NAME}" | sed 's|/|-|g')
           fi
           echo "$VERSION"
-          echo "$GITHUB_JOB"
-          fpm -s dir -t rpm -n voterwarehouse -v ${VERSION} --iteration ${GITHUB_JOB} \
+          echo "$GITHUB_RUN_NUMBER"
+          fpm -s dir -t rpm -n voterwarehouse -v ${VERSION} --iteration ${GITHUB_RUN_NUMBER} \
           --description "VoterWarehouse: Imports and Extracts Voter and History data" \
           --url "https://github.com/jamjon3/VoterWarehouse" \
           --license "LGPL-3.0" --vendor "James Jones" \
@@ -65,8 +65,8 @@ jobs:
             VERSION+=$(echo "~${GITHUB_REF_NAME}" | sed 's|/|-|g')
           fi
           echo "$VERSION"
-          echo "$GITHUB_JOB"
-          fpm -s dir -t deb -n voterwarehouse -v ${VERSION} --iteration ${GITHUB_JOB} \
+          echo "$GITHUB_RUN_NUMBER"
+          fpm -s dir -t deb -n voterwarehouse -v ${VERSION} --iteration ${GITHUB_RUN_NUMBER} \
           --description "VoterWarehouse: Imports and Extracts Voter and History data" \
           --url "https://github.com/jamjon3/VoterWarehouse" \
           --license "LGPL-3.0" --vendor "James Jones" \
