@@ -1,7 +1,7 @@
 name: Build VoterWarehouse
 on: push
 env:
-  ITERATION: $GITHUB_JOB
+  ITERATION: ${{ env.GITHUB_JOB }}
 
 jobs:
   build-job:
