@@ -43,6 +43,27 @@ Next steps (for me) involve publishing a container to Dockerhub. After that, bui
 out all the different pipelines. I'd imagine _if_ there's enough demand, I can
 create a Chocolatey package as well.
 
+Installing from Packagecloud (prebuilt package)
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+The Gitlab Actions publish the DEB and RPM files to Packagecloud so you can easily install the
+on Debian and RHEL'ish systems.
+
+Any RPM based (RHEL'ish) system to install the YUM repo and the package
+
+.. code:: commandline
+
+    curl -s https://packagecloud.io/install/repositories/jamjon3/yum/script.rpm.sh | sudo bash
+    sudo yum install voterwarehouse
+
+Any DEB based (debian based) system to install the APT repo and the package
+
+.. code:: commandline
+
+    curl -s https://packagecloud.io/install/repositories/jamjon3/deb/script.deb.sh | sudo bash
+    sudo apt-get install voterwarehouse
+
+
 Command line syntax
 ^^^^^^^^^^^^^^^^^^^
 
