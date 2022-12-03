@@ -52,6 +52,10 @@ jobs:
           ./dist/voterwarehouse=/usr/bin/voterwarehouse \
           ./config.sample.yml=/etc/VoterWarehouse/config.yml
           PACKAGE_FILE=$(find . -type f -name "voterwarehouse*.rpm")
+          rpm --import https://nexus.jamjon3.sytes.net/repository/gpg/RPM-GPG-KEY-JAMJON3
+          rpm --define "_gpg_name James Jones <jamjon3@gmail.com>" \
+            --define "_gpg_sign_cmd_extra_args --pinentry-mode loopback --passphrase ${{ secrets.JAMJON3_RPM_SIGN_PASSPHRASE }}" \
+            --addsign $PACKAGE_FILE
           curl -v -u "$YUM_USER:$YUM_PASSWORD" --upload-file $PACKAGE_FILE $NEXUS_YUM_REPO
           # package_cloud push $PACKAGE_CLOUD_REPO $PACKAGE_FILE
         shell: bash
