@@ -1,68 +1,18 @@
 # -*- coding: utf-8 -*-
 
-# Handles Database methods for FLorida data
+# Handles Database methods for Florida data
 
-import yaml
-import pymysql
-import pymysql.cursors
 import Warehouse.FloridaSQL
+from Warehouse.State import State
 
 
-class Florida:
+class Florida(State):
     """
     Warehouse.Florida class provides methods for storage of voter and voter history records and
     associated assistive methods,
     """
-
-    def __init__(self, config_file):
-        """
-        __init__ Sets the config dictionary of database credentials into variable named 'db'.
-
-        :param config_file: Path to the YAML config file
-        :return: None
-        """
-        try:
-            with open(config_file) as file:
-                self.config = yaml.full_load(file)['UnitedStates']['Florida']
-        except Exception as error:
-            print('Caught this error: ' + repr(error))
-            raise
-
-    def __enter__(self):
-        """
-        __enter__ Creates the database connection and sets it to the class as 'db'
-
-        :return: Instance of Warehouse.Florida
-        """
-        try:
-            self.db = pymysql.connect(
-                host=self.config["database"]["host"],
-                port=self.config["database"]["port"],
-                user=self.config["database"]["user"],
-                password=self.config["database"]["password"],
-                database=self.config["database"]["schema"],
-                cursorclass=pymysql.cursors.DictCursor
-            )
-        except Exception as error:
-            print('Caught this error: ' + repr(error))
-            raise
-        return self
-
-    def __exit__(self, exc_type, exc_val, exc_tb):
-        """
-        __exit__ Sets Exits the class and closes the database connection
-
-        :param exc_type: Execution Type
-        :param exc_val: Execution Value
-        :param exc_tb: Execution
-        :return: self
-        """
-        try:
-            self.db.close()
-        except Exception as error:
-            print('Caught this error: ' + repr(error))
-            raise
-        return self
+    country_designation = "UnitedStates"
+    state_designation = "Florida"
 
     def execute_prepared_sql(self, prepared_sql, prepared_tuple) -> None:
         """
@@ -113,4 +63,3 @@ class Florida:
         except Exception as error:
             print('Caught this error: ' + repr(error))
             raise
-

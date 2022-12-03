@@ -5,9 +5,10 @@
 import datetime
 import zipfile
 import Warehouse.FloridaSQL
+from Import.State import State
 
 
-class Florida:
+class Florida(State):
     """
     Import.Florida class provides methods to import voter and voter history from provided Zip files
     """
@@ -103,34 +104,6 @@ class Florida:
         "daytime_phone_extension",
         "email_address"
     ]
-
-    def __init__(self, db):
-        """
-        __init__ Sets the instance of Warehouse.Florida to a class variable named 'db'.
-
-        :param db: An instance of Warehouse.Florida
-        :return: None
-        """
-        self.db = db
-
-    def __enter__(self):
-        """
-        __enter__ Returns itself.
-
-        :return: Instance of Import.Florida
-        """
-        return self
-
-    def __exit__(self, exc_type, exc_val, exc_tb):
-        """
-        __exit__ Sets Exits the class.
-
-        :param exc_type: Execution Type
-        :param exc_val: Execution Value
-        :param exc_tb: Execution
-        :return: self
-        """
-        return self
 
     def parse_raw_history_into_tuple(self, history_raw, export_date):
         # Build a temporary dictionary from raw voter binary string
