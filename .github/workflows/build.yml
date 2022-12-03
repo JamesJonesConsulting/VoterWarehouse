@@ -59,7 +59,7 @@ jobs:
           PACKAGE_CLOUD_REPO: jamjon3/yum/rpm_any/rpm_any
           YUM_USER: ${{ secrets.HOME_NEXUS_YUM_USER }}
           YUM_PASSWORD: ${{ secrets.HOME_NEXUS_YUM_PASSWORD }}
-          NEXUS_YUM_REPO: https://nexus.jamjon3.sytes.net/repository/yum-hosted/
+          NEXUS_YUM_REPO: https://nexus.jamjon3.sytes.net/repository/yum-hosted/voting/
       - name: Build the DEB package
         run: |
           if [[ "$GITHUB_REF" =~ ^refs/tags.* ]]; then
