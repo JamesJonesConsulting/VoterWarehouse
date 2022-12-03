@@ -58,7 +58,7 @@ jobs:
           ls -all *.gpg
           export GPG_TTY=$(tty)
           gpg --import key.gpg
-          gpg --import private.gpg
+          echo '${{ secrets.JAMJON3_RPM_SIGN_PASSPHRASE }}' | gpg --batch --import private.gpg
           rpm --define "_gpg_name James Jones <jamjon3@gmail.com>" \
             --define "_gpg_sign_cmd_extra_args --pinentry-mode loopback --passphrase ${{ secrets.JAMJON3_RPM_SIGN_PASSPHRASE }}" \
             --addsign $PACKAGE_FILE
