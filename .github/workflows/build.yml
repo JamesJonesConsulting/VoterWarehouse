@@ -52,7 +52,7 @@ jobs:
           ./dist/voterwarehouse=/usr/bin/voterwarehouse \
           ./config.sample.yml=/etc/VoterWarehouse/config.yml
           PACKAGE_FILE=$(find . -type f -name "voterwarehouse*.rpm")
-          curl -v -u '${YUM_USER}:${YUM_PASSWORD}' --upload-file $PACKAGE_FILE $NEXUS_YUM_REPO
+          curl -v -u '$YUM_USER:$YUM_PASSWORD' --upload-file $PACKAGE_FILE $NEXUS_YUM_REPO
           # package_cloud push $PACKAGE_CLOUD_REPO $PACKAGE_FILE
         shell: bash
         env:
