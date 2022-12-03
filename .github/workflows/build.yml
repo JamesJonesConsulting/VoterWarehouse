@@ -54,8 +54,10 @@ jobs:
           PACKAGE_FILE=$(find . -type f -name "voterwarehouse*.rpm")
           rpm --import https://nexus.jamjon3.sytes.net/repository/gpg/RPM-GPG-KEY-JAMJON3
           echo "${{ secrets.JAMJON3_RPM_SIGN_GPG_KEY }}" | base64 -d > key.gpg
+          echo "${{ secrets.JAMJON3_RPM_SIGN_GPG_SECRET_KEY }}" | base64 -d > private.gpg
           export GPG_TTY=$(tty)
           gpg --import key.gpg
+          gpg --import private.gpg
           rpm --define "_gpg_name James Jones <jamjon3@gmail.com>" \
             --define "_gpg_sign_cmd_extra_args --pinentry-mode loopback --passphrase ${{ secrets.JAMJON3_RPM_SIGN_PASSPHRASE }}" \
             --addsign $PACKAGE_FILE
