@@ -16,7 +16,7 @@ jobs:
       - name: Install RPM dependencies
         run: |
           dnf install -y rpm-build rpm-sign rubygems ruby-devel gcc gcc-c++ make \
-            libffi-devel python3 python3-pip python3-virtualenv
+            libffi-devel python3 python3-pip python3-virtualenv curl
       # Sets up Rubygems packaging
       - name: Setup FPM with it's dependent package for building a package
         run: |
@@ -52,10 +52,14 @@ jobs:
           ./dist/voterwarehouse=/usr/bin/voterwarehouse \
           ./config.sample.yml=/etc/VoterWarehouse/config.yml
           PACKAGE_FILE=$(find . -type f -name "voterwarehouse*.rpm")
-          package_cloud push $PACKAGE_CLOUD_REPO $PACKAGE_FILE
+          curl -v -u '${YUM_USER}:${YUM_PASSWORD}' --upload-file $PACKAGE_FILE $NEXUS_YUM_REPO
+          # package_cloud push $PACKAGE_CLOUD_REPO $PACKAGE_FILE
         shell: bash
         env:
           PACKAGE_CLOUD_REPO: jamjon3/yum/rpm_any/rpm_any
+          YUM_USER: ${{ secrets.HOME_NEXUS_YUM_USER }}
+          YUM_PASSWORD: ${{ secrets.HOME_NEXUS_YUM_PASSWORD }}
+          NEXUS_YUM_REPO: https://nexus.jamjon3.sytes.net/repository/yum-hosted/
       - name: Build the DEB package
         run: |
           if [[ "$GITHUB_REF" =~ ^refs/tags.* ]]; then
@@ -75,8 +79,12 @@ jobs:
           ./dist/voterwarehouse=/usr/bin/voterwarehouse \
           ./config.sample.yml=/etc/VoterWarehouse/config.yml
           PACKAGE_FILE=$(find . -type f -name "voterwarehouse*.deb")
-          package_cloud push $PACKAGE_CLOUD_REPO $PACKAGE_FILE
+          # package_cloud push $PACKAGE_CLOUD_REPO $PACKAGE_FILE
+          # curl -v -u '${YUM_USER}:${YUM_PASSWORD}' --upload-file $PACKAGE_FILE $NEXUS_YUM_REPO
         shell: bash
         env:
           PACKAGE_CLOUD_REPO: jamjon3/deb/any/any
+          YUM_USER: ${{ secrets.HOME_NEXUS_YUM_USER }}
+          YUM_PASSWORD: ${{ secrets.HOME_NEXUS_YUM_PASSWORD }}
+          NEXUS_YUM_REPO: https://nexus.jamjon3.sytes.net/repository/yum-hosted/
     
