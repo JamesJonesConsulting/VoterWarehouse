@@ -45,8 +45,8 @@ jobs:
           echo "$GITHUB_RUN_NUMBER"
           fpm -s dir -t rpm -n voterwarehouse -v ${VERSION} --iteration ${GITHUB_RUN_NUMBER} \
           --description "VoterWarehouse: Imports and Extracts Voter and History data" \
-          --url "https://github.com/jamjon3/VoterWarehouse" \
-          --license "LGPL-3.0" --vendor "James Jones" \
+          --url "https://github.com/JamesJonesConsulting/VoterWarehouse" \
+          --license "LGPL-3.0" --vendor "James Jones" --maintainer "James Jones <jamjon3@gmail.com>" \
           --config-files /etc/VoterWarehouse/config.yml \
           -p ./dist \
           ./dist/voterwarehouse=/usr/bin/voterwarehouse \
