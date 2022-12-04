@@ -91,8 +91,7 @@ jobs:
           echo "${{ secrets.JAMJON3_RPM_SIGN_GPG_KEY }}" | base64 -d > dist/key.gpg
           echo "${{ secrets.JAMJON3_RPM_SIGN_GPG_SECRET_KEY }}" | base64 -d > dist/private.gpg
           podman build --no-cache \
-            --build-arg PACKAGE_FILE=$PACKAGE_FILE \
-            --env PRIVATE_KEY_PASS=${{ secrets.JAMJON3_RPM_SIGN_PASSPHRASE }} \
+            --build-arg PRIVATE_KEY_PASS=${{ secrets.JAMJON3_RPM_SIGN_PASSPHRASE }} \
             -f Dockerfile.ubuntu \
             -v "$(pwd)/dist:/dist:Z" .
           # package_cloud push $PACKAGE_CLOUD_REPO $PACKAGE_FILE
