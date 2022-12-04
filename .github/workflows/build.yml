@@ -103,7 +103,7 @@ jobs:
             DATA_BINARY+="$PACKAGE_FILE"
             echo "$DATA_BINARY"
             echo "${NEXUS_APT_REPOSITORY_ROOT}${repo}/"
-            curl -v -u "${APT_USER}:${APT_PASSWORD}" -H "Content-Type: multipart/form-data" --data-binary "${DATA_BINARY}" "${NEXUS_APT_REPOSITORY_ROOT}${repo}/"
+            curl -u "${APT_USER}:${APT_PASSWORD}" -H "Content-Type: multipart/form-data" --data-binary "${DATA_BINARY}" "${NEXUS_APT_REPOSITORY_ROOT}${repo}/"
           done
         shell: bash
         env:
