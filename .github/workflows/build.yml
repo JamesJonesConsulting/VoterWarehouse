@@ -90,7 +90,7 @@ jobs:
           # PACKAGE_FILE=$(find . -type f -name "voterwarehouse*.deb")          
           echo "${{ secrets.JAMJON3_RPM_SIGN_GPG_KEY }}" | base64 -d > dist/key.gpg
           echo "${{ secrets.JAMJON3_RPM_SIGN_GPG_SECRET_KEY }}" | base64 -d > dist/private.gpg
-          docker build --no-cache \
+          podman build --no-cache \
             --build-arg PACKAGE_FILE=$PACKAGE_FILE \
             --env PRIVATE_KEY_PASS=${{ secrets.JAMJON3_RPM_SIGN_PASSPHRASE }} \
             -f Dockerfile.ubuntu \
