@@ -5,7 +5,7 @@ jobs:
   build-job:
     runs-on: self-hosted
     container:
-      image: registry.fedoraproject.org/fedora:latest
+      image: quay.io/podman/stable:latest
       options: --userns=keep-id --privileged --user root
     steps:
       # Downloads a copy of the code in your repository before running CI tests
