@@ -87,19 +87,26 @@ jobs:
           -p ./dist \
           ./dist/voterwarehouse=/usr/bin/voterwarehouse \
           ./config.sample.yml=/etc/VoterWarehouse/config.yml
-          # PACKAGE_FILE=$(find . -type f -name "voterwarehouse*.deb")          
           echo "${{ secrets.JAMJON3_RPM_SIGN_GPG_KEY }}" | base64 -d > dist/key.gpg
           echo "${{ secrets.JAMJON3_RPM_SIGN_GPG_SECRET_KEY }}" | base64 -d > dist/private.gpg
           podman build --no-cache \
             --build-arg PRIVATE_KEY_PASS=${{ secrets.JAMJON3_RPM_SIGN_PASSPHRASE }} \
             -f Dockerfile.ubuntu \
             -v "$(pwd)/dist:/dist:Z" .
+          PACKAGE_FILE=$(find . -type f -name "voterwarehouse*.deb")          
           # package_cloud push $PACKAGE_CLOUD_REPO $PACKAGE_FILE
-          # curl -v -u '${YUM_USER}:${YUM_PASSWORD}' --upload-file $PACKAGE_FILE $NEXUS_YUM_REPO
+          apt_repos=(
+            apt-focal-hosted
+          )
+          for repo in ${apt_repos[@]}; do
+            DATA_BINARY='@'
+            DATA_BINARY+="$PACKAGE_FILE"
+            curl -v -u '${APT_USER}:${APT_PASSWORD}' -H "Content-Type: multipart/form-data" --data-binary "${DATA_BINARY}" "${NEXUS_APT_REPOSITORY_ROOT}${repo}/"
+          done
         shell: bash
         env:
           PACKAGE_CLOUD_REPO: jamjon3/deb/any/any
-          YUM_USER: ${{ secrets.HOME_NEXUS_YUM_USER }}
-          YUM_PASSWORD: ${{ secrets.HOME_NEXUS_YUM_PASSWORD }}
-          NEXUS_APT_FOCAL_REPO: https://nexus.jamjon3.sytes.net/repository/apt-focal-hosted/
+          APT_USER: ${{ secrets.HOME_NEXUS_APT_USER }}
+          APT_PASSWORD: ${{ secrets.HOME_NEXUS_APT_PASSWORD }}
+          NEXUS_APT_REPOSITORY_ROOT: https://nexus.jamjon3.sytes.net/repository/
     
