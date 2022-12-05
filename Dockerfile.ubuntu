@@ -12,6 +12,6 @@ RUN gpg --import key.gpg \
   && echo '${PRIVATE_KEY_PASS}' | gpg --batch --import private.gpg \
   && PUBLIC_KEY_ID=$(gpg --list-keys | grep "^\s" | xargs) \
   && PACKAGE_FILE=$(find . -type f -name "voterwarehouse*.deb" | xargs basename) \
-  && echo dpkg-sig -k $PUBLIC_KEY_ID --sign $PACKAGE_FILE
+  && dpkg-sig -k $PUBLIC_KEY_ID --sign $PACKAGE_FILE
   # && dpkg-sig --verify $PACKAGE_FILE
 

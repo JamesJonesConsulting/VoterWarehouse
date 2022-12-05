@@ -39,18 +39,16 @@ jobs:
             VERSION=$GITHUB_REF_NAME
           else
             VERSION=$(./dist/voterwarehouse -v)
-            VERSION+=$(echo "~${GITHUB_REF_NAME}" | sed 's|/|-|g')
+            VERSION+=$(echo "~${GITHUB_REF_NAME}" | sed "s|/${VERSION}||g" | sed 's|/|-|g')
           fi
-          echo "$VERSION"
-          echo "$GITHUB_RUN_NUMBER"
           fpm -s dir -t rpm -n voterwarehouse -v ${VERSION} --iteration ${GITHUB_RUN_NUMBER} \
-          --description "VoterWarehouse: Imports and Extracts Voter and History data" \
-          --url "https://github.com/JamesJonesConsulting/VoterWarehouse" \
-          --license "LGPL-3.0" --vendor "James Jones" --maintainer "James Jones <jamjon3@gmail.com>" \
-          --config-files /etc/VoterWarehouse/config.yml \
-          -p ./dist \
-          ./dist/voterwarehouse=/usr/bin/voterwarehouse \
-          ./config.sample.yml=/etc/VoterWarehouse/config.yml
+            --description "VoterWarehouse: Imports and Extracts Voter and History data" \
+            --url "https://github.com/JamesJonesConsulting/VoterWarehouse" \
+            --license "LGPL-3.0" --vendor "James Jones" --maintainer "James Jones <jamjon3@gmail.com>" \
+            --config-files /etc/VoterWarehouse/config.yml \
+            -p ./dist \
+            ./dist/voterwarehouse=/usr/bin/voterwarehouse \
+            ./config.sample.yml=/etc/VoterWarehouse/config.yml
           PACKAGE_FILE=$(find . -type f -name "voterwarehouse*.rpm")
           rpm --import https://nexus.jamjon3.sytes.net/repository/gpg/RPM-GPG-KEY-JAMJON3
           echo "${{ secrets.JAMJON3_RPM_SIGN_GPG_KEY }}" | base64 -d > key.gpg
@@ -75,18 +73,19 @@ jobs:
             VERSION=$GITHUB_REF_NAME
           else
             VERSION=$(./dist/voterwarehouse -v)
-            VERSION+=$(echo "~${GITHUB_REF_NAME}" | sed 's|/|-|g')
+            # VERSION+=$(echo "~${GITHUB_REF_NAME}" | sed 's|/|-|g')
+            VERSION+=$(echo "~${GITHUB_REF_NAME}" | sed "s|/${VERSION}||g" | sed 's|/|-|g')
           fi
           echo "$VERSION"
           echo "$GITHUB_RUN_NUMBER"
           fpm -s dir -t deb -n voterwarehouse -v ${VERSION} --iteration ${GITHUB_RUN_NUMBER} \
-          --description "VoterWarehouse: Imports and Extracts Voter and History data" \
-          --url "https://github.com/jamjon3/VoterWarehouse" \
-          --license "LGPL-3.0" --vendor "James Jones" \
-          --config-files /etc/VoterWarehouse/config.yml \
-          -p ./dist \
-          ./dist/voterwarehouse=/usr/bin/voterwarehouse \
-          ./config.sample.yml=/etc/VoterWarehouse/config.yml
+            --description "VoterWarehouse: Imports and Extracts Voter and History data" \
+            --url "https://github.com/jamjon3/VoterWarehouse" \
+            --license "LGPL-3.0" --vendor "James Jones" \
+            --config-files /etc/VoterWarehouse/config.yml \
+            -p ./dist \
+            ./dist/voterwarehouse=/usr/bin/voterwarehouse \
+            ./config.sample.yml=/etc/VoterWarehouse/config.yml
           echo "${{ secrets.JAMJON3_RPM_SIGN_GPG_KEY }}" | base64 -d > dist/key.gpg
           echo "${{ secrets.JAMJON3_RPM_SIGN_GPG_SECRET_KEY }}" | base64 -d > dist/private.gpg
           podman build --no-cache \
@@ -94,7 +93,6 @@ jobs:
             -f Dockerfile.ubuntu \
             -v "$(pwd)/dist:/dist:Z" .
           PACKAGE_FILE=$(find . -type f -name "voterwarehouse*.deb")          
-          # package_cloud push $PACKAGE_CLOUD_REPO $PACKAGE_FILE
           apt_repos=(
             apt-focal-hosted
           )
@@ -105,6 +103,7 @@ jobs:
             echo "${NEXUS_APT_REPOSITORY_ROOT}${repo}/"
             curl -u "${APT_USER}:${APT_PASSWORD}" -H "Content-Type: multipart/form-data" --data-binary "${DATA_BINARY}" "${NEXUS_APT_REPOSITORY_ROOT}${repo}/"
           done
+          # package_cloud push $PACKAGE_CLOUD_REPO $PACKAGE_FILE
         shell: bash
         env:
           PACKAGE_CLOUD_REPO: jamjon3/deb/any/any
