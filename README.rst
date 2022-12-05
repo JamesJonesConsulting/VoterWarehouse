@@ -63,7 +63,16 @@ Any DEB based (debian based) system to install the APT repo and the package
     curl -s https://packagecloud.io/install/repositories/jamjon3/deb/script.deb.sh | sudo bash
     sudo apt-get install voterwarehouse
 
+Installing from Self-Hosted (James Jones Consulting)
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Installing the RPM that is GPG Signed is easy off my Nexus Repository.
+
+.. code:: commandline
+
+    curl https://nexus.jamjon3.sytes.net/repository/package-config/yum/jamjon3-voters.repo | sudo tee /etc/yum.repos.d/jamjon3-voters.repo
+    sudo yum install voterwarehouse
+  
 Command line syntax
 ^^^^^^^^^^^^^^^^^^^
 

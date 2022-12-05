@@ -5,7 +5,7 @@ jobs:
   build-job:
     runs-on: self-hosted
     container:
-      image: registry.fedoraproject.org/fedora:latest
+      image: quay.io/podman/stable:latest
       options: --userns=keep-id --privileged --user root
     steps:
       # Downloads a copy of the code in your repository before running CI tests
@@ -16,8 +16,8 @@ jobs:
       - name: Install RPM dependencies
         run: |
           dnf install -y rpm-build rpm-sign rubygems ruby-devel gcc gcc-c++ make \
-            libffi-devel python3 python3-pip python3-virtualenv
-      # Sets up Rubygems packaging
+            libffi-devel python3 python3-pip python3-virtualenv curl pinentry
+      # Sets up Rubygems packaging pinentry-program /usr/bin/pinentry-curses
       - name: Setup FPM with it's dependent package for building a package
         run: |
           gem install ffi
@@ -39,44 +39,73 @@ jobs:
             VERSION=$GITHUB_REF_NAME
           else
             VERSION=$(./dist/voterwarehouse -v)
-            VERSION+=$(echo "~${GITHUB_REF_NAME}" | sed 's|/|-|g')
+            VERSION+=$(echo "~${GITHUB_REF_NAME}" | sed "s|/${VERSION}||g" | sed 's|/|-|g')
           fi
-          echo "$VERSION"
-          echo "$GITHUB_RUN_NUMBER"
           fpm -s dir -t rpm -n voterwarehouse -v ${VERSION} --iteration ${GITHUB_RUN_NUMBER} \
-          --description "VoterWarehouse: Imports and Extracts Voter and History data" \
-          --url "https://github.com/jamjon3/VoterWarehouse" \
-          --license "LGPL-3.0" --vendor "James Jones" \
-          --config-files /etc/VoterWarehouse/config.yml \
-          -p ./dist \
-          ./dist/voterwarehouse=/usr/bin/voterwarehouse \
-          ./config.sample.yml=/etc/VoterWarehouse/config.yml
+            --description "VoterWarehouse: Imports and Extracts Voter and History data" \
+            --url "https://github.com/JamesJonesConsulting/VoterWarehouse" \
+            --license "LGPL-3.0" --vendor "James Jones" --maintainer "James Jones <jamjon3@gmail.com>" \
+            --config-files /etc/VoterWarehouse/config.yml \
+            -p ./dist \
+            ./dist/voterwarehouse=/usr/bin/voterwarehouse \
+            ./config.sample.yml=/etc/VoterWarehouse/config.yml
           PACKAGE_FILE=$(find . -type f -name "voterwarehouse*.rpm")
-          package_cloud push $PACKAGE_CLOUD_REPO $PACKAGE_FILE
+          rpm --import https://nexus.jamjon3.sytes.net/repository/gpg/RPM-GPG-KEY-JAMJON3
+          echo "${{ secrets.JAMJON3_RPM_SIGN_GPG_KEY }}" | base64 -d > key.gpg
+          echo "${{ secrets.JAMJON3_RPM_SIGN_GPG_SECRET_KEY }}" | base64 -d > private.gpg
+          export GPG_TTY=$(tty)
+          gpg --import key.gpg
+          echo '${{ secrets.JAMJON3_RPM_SIGN_PASSPHRASE }}' | gpg --batch --import private.gpg
+          rpm --define "_gpg_name James Jones <jamjon3@gmail.com>" \
+            --define "_gpg_sign_cmd_extra_args --pinentry-mode loopback --passphrase ${{ secrets.JAMJON3_RPM_SIGN_PASSPHRASE }}" \
+            --addsign $PACKAGE_FILE
+          curl -u "$YUM_USER:$YUM_PASSWORD" --upload-file $PACKAGE_FILE $NEXUS_YUM_REPO
+          # package_cloud push $PACKAGE_CLOUD_REPO $PACKAGE_FILE
         shell: bash
         env:
           PACKAGE_CLOUD_REPO: jamjon3/yum/rpm_any/rpm_any
+          YUM_USER: ${{ secrets.HOME_NEXUS_YUM_USER }}
+          YUM_PASSWORD: ${{ secrets.HOME_NEXUS_YUM_PASSWORD }}
+          NEXUS_YUM_REPO: https://nexus.jamjon3.sytes.net/repository/yum-hosted/voting/
       - name: Build the DEB package
         run: |
           if [[ "$GITHUB_REF" =~ ^refs/tags.* ]]; then
             VERSION=$GITHUB_REF_NAME
           else
             VERSION=$(./dist/voterwarehouse -v)
-            VERSION+=$(echo "~${GITHUB_REF_NAME}" | sed 's|/|-|g')
+            # VERSION+=$(echo "~${GITHUB_REF_NAME}" | sed 's|/|-|g')
+            VERSION+=$(echo "~${GITHUB_REF_NAME}" | sed "s|/${VERSION}||g" | sed 's|/|-|g')
           fi
-          echo "$VERSION"
-          echo "$GITHUB_RUN_NUMBER"
           fpm -s dir -t deb -n voterwarehouse -v ${VERSION} --iteration ${GITHUB_RUN_NUMBER} \
-          --description "VoterWarehouse: Imports and Extracts Voter and History data" \
-          --url "https://github.com/jamjon3/VoterWarehouse" \
-          --license "LGPL-3.0" --vendor "James Jones" \
-          --config-files /etc/VoterWarehouse/config.yml \
-          -p ./dist \
-          ./dist/voterwarehouse=/usr/bin/voterwarehouse \
-          ./config.sample.yml=/etc/VoterWarehouse/config.yml
-          PACKAGE_FILE=$(find . -type f -name "voterwarehouse*.deb")
-          package_cloud push $PACKAGE_CLOUD_REPO $PACKAGE_FILE
+            --description "VoterWarehouse: Imports and Extracts Voter and History data" \
+            --url "https://github.com/jamjon3/VoterWarehouse" \
+            --license "LGPL-3.0" --vendor "James Jones" \
+            --config-files /etc/VoterWarehouse/config.yml \
+            -p ./dist \
+            ./dist/voterwarehouse=/usr/bin/voterwarehouse \
+            ./config.sample.yml=/etc/VoterWarehouse/config.yml
+          echo "${{ secrets.JAMJON3_RPM_SIGN_GPG_KEY }}" | base64 -d > dist/key.gpg
+          echo "${{ secrets.JAMJON3_RPM_SIGN_GPG_SECRET_KEY }}" | base64 -d > dist/private.gpg
+          podman build --no-cache \
+            --build-arg PRIVATE_KEY_PASS=${{ secrets.JAMJON3_RPM_SIGN_PASSPHRASE }} \
+            -f Dockerfile.ubuntu \
+            -v "$(pwd)/dist:/dist:Z" .
+          PACKAGE_FILE=$(find . -type f -name "voterwarehouse*.deb")          
+          apt_repos=(
+            apt-focal-hosted
+          )
+          for repo in ${apt_repos[@]}; do
+            DATA_BINARY='@'
+            DATA_BINARY+="$PACKAGE_FILE"
+            echo "$DATA_BINARY"
+            echo "${NEXUS_APT_REPOSITORY_ROOT}${repo}/"
+            curl -u "${APT_USER}:${APT_PASSWORD}" -H "Content-Type: multipart/form-data" --data-binary "${DATA_BINARY}" "${NEXUS_APT_REPOSITORY_ROOT}${repo}/"
+          done
+          # package_cloud push $PACKAGE_CLOUD_REPO $PACKAGE_FILE
         shell: bash
         env:
           PACKAGE_CLOUD_REPO: jamjon3/deb/any/any
+          APT_USER: ${{ secrets.HOME_NEXUS_APT_USER }}
+          APT_PASSWORD: ${{ secrets.HOME_NEXUS_APT_PASSWORD }}
+          NEXUS_APT_REPOSITORY_ROOT: https://nexus.jamjon3.sytes.net/repository/
     
