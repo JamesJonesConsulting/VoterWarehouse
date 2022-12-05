@@ -59,7 +59,7 @@ jobs:
           rpm --define "_gpg_name James Jones <jamjon3@gmail.com>" \
             --define "_gpg_sign_cmd_extra_args --pinentry-mode loopback --passphrase ${{ secrets.JAMJON3_RPM_SIGN_PASSPHRASE }}" \
             --addsign $PACKAGE_FILE
-          curl -v -u "$YUM_USER:$YUM_PASSWORD" --upload-file $PACKAGE_FILE $NEXUS_YUM_REPO
+          curl -u "$YUM_USER:$YUM_PASSWORD" --upload-file $PACKAGE_FILE $NEXUS_YUM_REPO
           # package_cloud push $PACKAGE_CLOUD_REPO $PACKAGE_FILE
         shell: bash
         env:
@@ -76,8 +76,6 @@ jobs:
             # VERSION+=$(echo "~${GITHUB_REF_NAME}" | sed 's|/|-|g')
             VERSION+=$(echo "~${GITHUB_REF_NAME}" | sed "s|/${VERSION}||g" | sed 's|/|-|g')
           fi
-          echo "$VERSION"
-          echo "$GITHUB_RUN_NUMBER"
           fpm -s dir -t deb -n voterwarehouse -v ${VERSION} --iteration ${GITHUB_RUN_NUMBER} \
             --description "VoterWarehouse: Imports and Extracts Voter and History data" \
             --url "https://github.com/jamjon3/VoterWarehouse" \
