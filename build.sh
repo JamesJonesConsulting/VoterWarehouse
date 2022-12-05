@@ -23,5 +23,5 @@ fi
 
 docker build --no-cache \
   --build-arg ITERATION=1 \
-  --build-arg VERSION=${VERSION} \
+  --build-arg VERSION="${VERSION}" \
   -v "$(pwd)/dist:/dist:Z" .

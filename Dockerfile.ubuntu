@@ -1,0 +1,17 @@
+FROM docker.io/ubuntu:jammy AS jammy
+
+ARG PRIVATE_KEY_PASS
+
+ENV GPG_TTY /dev/console
+
+RUN apt-get update; apt-get install -y dpkg-sig gnupg
+
+WORKDIR /dist
+
+RUN gpg --import key.gpg \
+  && echo '${PRIVATE_KEY_PASS}' | gpg --batch --import private.gpg \
+  && PUBLIC_KEY_ID=$(gpg --list-keys | grep "^\s" | xargs) \
+  && PACKAGE_FILE=$(find . -type f -name "voterwarehouse*.deb" | xargs basename) 
+  # && dpkg-sig -k $PUBLIC_KEY_ID --sign $PACKAGE_FILE
+  # && dpkg-sig --verify $PACKAGE_FILE
+
