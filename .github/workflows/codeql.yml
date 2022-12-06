@@ -24,6 +24,9 @@ jobs:
   analyze:
     name: Analyze
     runs-on: self-hosted
+    container:
+      image: quay.io/podman/stable:latest
+      options: --userns=keep-id --privileged --user root
     permissions:
       actions: read
       contents: read
