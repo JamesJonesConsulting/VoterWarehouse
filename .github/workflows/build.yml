@@ -32,17 +32,29 @@ jobs:
         run: |
           python3 -m venv venv
           source venv/bin/activate
-          python -m pip install -r requirements.txt
+          python -m pip install .
           python build.py
-      - name: Build the RPM package
+      - name: Generate Versions
+        id: package-versions
         run: |
           if [[ "$GITHUB_REF" =~ ^refs/tags.* ]]; then
-            VERSION=$GITHUB_REF_NAME
+            echo "standard=$GITHUB_REF_NAME" >> $GITHUB_OUTPUT
+            echo "rpm=$GITHUB_REF_NAME" >> $GITHUB_OUTPUT
+            DEB_VER=$(echo "$GITHUB_REF_NAME" | sed 's|_|-|g')
+            echo "deb=$DEB_VER" >> $GITHUB_OUTPUT
           else
             VERSION=$(./dist/voterwarehouse -v)
             VERSION+=$(echo "~${GITHUB_REF_NAME}" | sed "s|/${VERSION}||g" | sed 's|/|-|g')
+            echo "standard=VERSION" >> $GITHUB_OUTPUT
+            echo "rpm=VERSION" >> $GITHUB_OUTPUT
+            DEB_VER=$(echo "$VERSION" | sed 's|_|-|g')
+            echo "deb=$DEB_VER" >> $GITHUB_OUTPUT
           fi
-          fpm -s dir -t rpm -n voterwarehouse -v ${VERSION} --iteration ${GITHUB_RUN_NUMBER} \
+      - name: Build the RPM package
+        run: |
+          fpm -s dir -t rpm -n voterwarehouse \
+            -v ${{ steps.package-versions.outputs.rpm }} \
+            --iteration ${GITHUB_RUN_NUMBER} \
             --description "VoterWarehouse: Imports and Extracts Voter and History data" \
             --url "https://github.com/JamesJonesConsulting/VoterWarehouse" \
             --license "LGPL-3.0" --vendor "James Jones" --maintainer "James Jones <jamjon3@gmail.com>" \
@@ -70,14 +82,9 @@ jobs:
           NEXUS_YUM_REPO: https://nexus.jamjon3.sytes.net/repository/yum-hosted/voting/
       - name: Build the DEB package
         run: |
-          if [[ "$GITHUB_REF" =~ ^refs/tags.* ]]; then
-            VERSION=$GITHUB_REF_NAME
-          else
-            VERSION=$(./dist/voterwarehouse -v)
-            # VERSION+=$(echo "~${GITHUB_REF_NAME}" | sed 's|/|-|g')
-            VERSION+=$(echo "~${GITHUB_REF_NAME}" | sed "s|/${VERSION}||g" | sed 's|/|-|g')
-          fi
-          fpm -s dir -t deb -n voterwarehouse -v ${VERSION} --iteration ${GITHUB_RUN_NUMBER} \
+          fpm -s dir -t deb -n voterwarehouse \
+            -v ${{ steps.package-versions.outputs.deb }} \
+            --iteration ${GITHUB_RUN_NUMBER} \
             --description "VoterWarehouse: Imports and Extracts Voter and History data" \
             --url "https://github.com/jamjon3/VoterWarehouse" \
             --license "LGPL-3.0" --vendor "James Jones" \
@@ -108,5 +115,17 @@ jobs:
           PACKAGE_CLOUD_REPO: jamjon3/deb/any/any
           APT_USER: ${{ secrets.HOME_NEXUS_APT_USER }}
           APT_PASSWORD: ${{ secrets.HOME_NEXUS_APT_PASSWORD }}
-          NEXUS_APT_REPOSITORY_ROOT: https://nexus.jamjon3.sytes.net/repository/
-    
+          NEXUS_APT_REPOSITORY_ROOT: https://nexus.jamesjonesconsulting.com/repository/
+      - name: Archive tool artifacts
+        if: ${{ !startsWith(github.ref,'refs/tags/') }}
+        uses: actions/upload-artifact@v3
+        with:
+          name: "voterwarehouse-${{ steps.package-versions.outputs.standard }}"
+          path: |
+            dist
+      - name: Release tool artifacts
+        if: ${{ startsWith(github.ref,'refs/tags/') }}
+        uses: ncipollo/release-action@v1
+        with:
+          artifacts: "dist/*.*"
+          allowUpdates: true

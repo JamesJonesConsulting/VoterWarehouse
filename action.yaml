@@ -1,0 +1,26 @@
+  name: Install VoterWarehouse tool
+  description: |
+    Install VoterWarehouse CLI in GitHub tools
+
+  branding:
+    icon: copy
+    color: green
+
+  inputs:
+    tag:
+      required: true
+      description: The release tag of VoterWarehouse to setup
+      default: 3.1.1
+  runs:
+    using: composite
+    steps:
+      - run:
+          wget -q -O - \
+            "https://api.github.com/repos/jamesjonesconsulting/voterwarehouse/releases/tags/${{ inputs.tag }}"
+
+      - name: Add tool to GitHub path
+        shell: bash +e {0}
+        run: |
+          unzip "$RUNNER_TOOL_CACHE/VoterWarehouse/VoterWarehouse.zip" -d "$RUNNER_TOOL_CACHE/VoterWarehouse/"
+          rm -f "$RUNNER_TOOL_CACHE/VoterWarehouse/VoterWarehouse.zip"
+          echo "$RUNNER_TOOL_CACHE/VoterWarehouse/" >> $GITHUB_PATH

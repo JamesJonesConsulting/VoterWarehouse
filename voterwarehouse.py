@@ -5,7 +5,7 @@
 import os
 import argparse
 import pydoc
-from version import __version__
+from Warehouse.version import __version__
 
 
 implemented_states = [
