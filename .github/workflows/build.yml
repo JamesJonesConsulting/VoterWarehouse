@@ -6,7 +6,7 @@ jobs:
   build-job:
     runs-on: self-hosted
     container:
-      image: "$registry-proxy/podman/stable:latest"
+      image: nexus.jamesjonesconsulting.com:5444/podman/stable:latest"
       # image: quay.io/podman/stable:latest
       options: --userns=keep-id --group-add keep-groups --privileged --user root
 #      options: --userns=keep-id --privileged --user root
