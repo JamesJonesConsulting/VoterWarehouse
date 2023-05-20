@@ -45,8 +45,8 @@ jobs:
           else
             VERSION=$(./dist/voterwarehouse -v)
             VERSION+=$(echo "~${GITHUB_REF_NAME}" | sed "s|/${VERSION}||g" | sed 's|/|-|g')
-            echo "standard=VERSION" >> $GITHUB_OUTPUT
-            echo "rpm=VERSION" >> $GITHUB_OUTPUT
+            echo "standard=$VERSION" >> $GITHUB_OUTPUT
+            echo "rpm=$VERSION" >> $GITHUB_OUTPUT
             DEB_VER=$(echo "$VERSION" | sed 's|_|-|g')
             echo "deb=$DEB_VER" >> $GITHUB_OUTPUT
           fi
@@ -79,7 +79,7 @@ jobs:
           PACKAGE_CLOUD_REPO: jamjon3/yum/rpm_any/rpm_any
           YUM_USER: ${{ secrets.HOME_NEXUS_YUM_USER }}
           YUM_PASSWORD: ${{ secrets.HOME_NEXUS_YUM_PASSWORD }}
-          NEXUS_YUM_REPO: https://nexus.jamjon3.sytes.net/repository/yum-hosted/voting/
+          NEXUS_YUM_REPO: https://nexus.jamesjonesconsulting.com/repository/yum-hosted/voting/
       - name: Build the DEB package
         run: |
           fpm -s dir -t deb -n voterwarehouse \
