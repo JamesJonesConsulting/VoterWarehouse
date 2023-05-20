@@ -1,4 +1,5 @@
-FROM docker.io/ubuntu:jammy AS jammy
+ARG REGISTRY_PROXY
+FROM ${REGISTRY_PROXY}/ubuntu:jammy AS jammy
 
 ARG PRIVATE_KEY_PASS
 

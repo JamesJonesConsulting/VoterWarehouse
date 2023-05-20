@@ -1,12 +1,19 @@
 name: Build VoterWarehouse
 on: push
-
+env:
+  registry-proxy: nexus.jamesjonesconsulting.com:5444
 jobs:
   build-job:
     runs-on: self-hosted
     container:
-      image: quay.io/podman/stable:latest
-      options: --userns=keep-id --privileged --user root
+      image: ${{ env.registry-proxy }}/podman/stable:latest
+      # image: quay.io/podman/stable:latest
+      options: --userns=keep-id --group-add keep-groups --privileged --user root
+#      options: --userns=keep-id --privileged --user root
+      credentials:
+        username: ${{ secrets.HOME_NEXUS_DOCKER_USER }}
+        password: ${{ secrets.HOME_NEXUS_DOCKER_PASSWORD }}
+
     steps:
       # Sets up RPM build tools and Ruby Gems
       - name: Install RPM dependencies
@@ -80,6 +87,12 @@ jobs:
           YUM_USER: ${{ secrets.HOME_NEXUS_YUM_USER }}
           YUM_PASSWORD: ${{ secrets.HOME_NEXUS_YUM_PASSWORD }}
           NEXUS_YUM_REPO: https://nexus.jamesjonesconsulting.com/repository/yum-hosted/voting/
+      - name: Docker Login
+        uses: azure/docker-login@v1
+        with:
+          login-server: ${{ env.registry-proxy }}
+          username: ${{ secrets.HOME_NEXUS_DOCKER_USER }}
+          password: ${{ secrets.HOME_NEXUS_DOCKER_PASSWORD }}
       - name: Build the DEB package
         run: |
           fpm -s dir -t deb -n voterwarehouse \
@@ -96,6 +109,7 @@ jobs:
           echo "${{ secrets.JAMJON3_RPM_SIGN_GPG_SECRET_KEY }}" | base64 -d > dist/private.gpg
           podman build --no-cache \
             --build-arg PRIVATE_KEY_PASS=${{ secrets.JAMJON3_RPM_SIGN_PASSPHRASE }} \
+            --build-arg REGISTRY_PROXY=${{ env.registry-proxy }} \
             -f Dockerfile.ubuntu \
             -v "$(pwd)/dist:/dist:Z" .
           PACKAGE_FILE=$(find . -type f -name "voterwarehouse*.deb")          
