@@ -19,7 +19,7 @@ inputs:
     default: '3.11.3'
 runs:
   using: 'docker'
-  image: 'Dockerfile.${{ inputs.python-version }}'
+  image: 'Dockerfile.3.11.3'
   entrypoint: 'entrypoint.sh'
   env:
     ARTIFACTORY: ${{ inputs.registry-proxy }}
