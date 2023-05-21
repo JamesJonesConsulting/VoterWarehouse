@@ -33,6 +33,12 @@ jobs:
         env:
           PC_TOKEN: ${{ secrets.PACKAGECLOUD_TOKEN }}
       # Sets up the python virtual environment, pulls the requirements and builds the binary
+      - name: Build the Linux binary
+        run: |
+          python3 -m venv venv
+          source venv/bin/activate
+          python -m pip install .
+          python build.py
       - name: Generate Versions
         id: package-versions
         run: |
@@ -49,12 +55,6 @@ jobs:
             DEB_VER=$(echo "$VERSION" | sed 's|_|-|g')
             echo "deb=$DEB_VER" >> $GITHUB_OUTPUT
           fi
-      - name: Build the Linux binary
-        run: |
-          python3 -m venv venv
-          source venv/bin/activate
-          python -m pip install .
-          python build.py
       - name: Docker Login
         uses: azure/docker-login@v1
         with:
