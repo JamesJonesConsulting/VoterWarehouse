@@ -1,0 +1,29 @@
+# action.yml
+name: 'Generate Windows compatible binary'
+description: 'Creates the Python for Windows binary'
+inputs:
+  binary-basename:
+    description: 'Name of the output binary without extension'
+    required: true
+    default: 'voterwarehouse'
+  version:
+    description: 'Full path to script, including the script filename'
+    required: true
+    default: '1.0.0'
+  registry-proxy:
+    description: The proxy registry domain and port
+    required: true
+  python-version:
+    description: The version number of python for windows
+    required: true
+    default: '3.11.3'
+runs:
+  using: 'docker'
+  image: 'Dockerfile'
+  entrypoint: 'entrypoint.sh'
+  env:
+    ARTIFACTORY: ${{ inputs.registry-proxy }}
+    PYTHON_VERSION: ${{ inputs.python-version }}
+  args:
+    - ${{ inputs.binary-basename }}
+    - ${{ inputs.version }}
