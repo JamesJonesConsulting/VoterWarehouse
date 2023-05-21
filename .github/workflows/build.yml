@@ -8,7 +8,8 @@ jobs:
     runs-on: self-hosted
     container:
       image: nexus.jamesjonesconsulting.com:5444/podman/stable:latest
-      options: --userns=keep-id --privileged --user root
+      # options: --userns=keep-id --privileged --user root
+      options: --userns=keep-id --group-add keep-groups --privileged --user root --security-opt seccomp=unconfined
       credentials:
         username: ${{ secrets.HOME_NEXUS_DOCKER_USER }}
         password: ${{ secrets.HOME_NEXUS_DOCKER_PASSWORD }}
