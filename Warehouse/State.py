@@ -1,4 +1,6 @@
 # -*- coding: utf-8 -*-
+from types import TracebackType
+from typing import Optional, Type
 
 # Abstract Class Handles Database methods for State data
 
@@ -67,18 +69,24 @@ class State(ABC):
             raise
         return self
 
-    def __exit__(self, exc_type, exc_val, exc_tb):
+    def __exit__(
+        self,
+        exc_type: Optional[Type[BaseException]],
+        exc_val: Optional[BaseException],
+        exc_tb: Optional[TracebackType]
+    ) -> bool:
         """
-        __exit__ Sets Exits the class and closes the database connection
+        __exit__ Sets Exits the class.
 
-        :param exc_type: Execution Type
-        :param exc_val: Execution Value
-        :param exc_tb: Execution
-        :return: self
+        :param Optional[Type[BaseException]] exc_type: Execution Type
+        :param Optional[BaseException] exc_val: Execution Value
+        :param Optional[TracebackType] exc_tb: Execution
+        :return: Always true unless otherwise implemented in the future
+        :rtype: bool
         """
         try:
             self.db.close()
         except Exception as error:
             print('Caught this error: ' + repr(error))
             raise
-        return self
+        return True

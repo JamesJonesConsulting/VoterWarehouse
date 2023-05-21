@@ -4,7 +4,6 @@
 
 import datetime
 import zipfile
-from typing import Any
 
 import Warehouse.FloridaSQL
 from Import.State import State
@@ -107,15 +106,16 @@ class Florida(State):
         "email_address"
     ]
 
-    def parse_raw_history_into_tuple(self, history_raw: bytes, export_date: str):
+    def parse_raw_history_into_tuple(self, history_raw: bytes, export_date: str) -> tuple[str | None, ...]:
         """
         Build a temporary dictionary from raw voter binary string
 
-        :param export_date:
-        :param: bytes history_raw: A byte string containing a raw row of history data
-        :type history_raw: object
+        :param bytes history_raw: A byte string containing a raw row of history data
+        :param str export_date: Export date string in YYYY-MM-DD format
+        :return: A tuple of SQL ready prepared parameters
+        :rtype: tuple[str | None, ...]
         """
-        row: dict[str, Any] = dict(
+        row: dict[str, bytes | str | None] = dict(
             zip(
                 self.history_keys,
                 history_raw.strip().split(b"\t")
@@ -137,15 +137,16 @@ class Florida(State):
                 row[k] = datetime.datetime.strptime(row[k], "%m/%d/%Y").strftime('%Y-%m-%d')
         return tuple(row.values())
 
-    def parse_raw_voter_into_tuple(self, voter_raw: bytes, export_date: str):
+    def parse_raw_voter_into_tuple(self, voter_raw: bytes, export_date: str) -> tuple[str | None, ...]:
         """
         Build a temporary dictionary from raw voter binary string
 
-        :param bytes voter_raw:
-        :param str export_date:
-        :return:
+        :param bytes voter_raw: A byte string containing a raw row of voter data
+        :param str export_date: Export date string in YYYY-MM-DD format
+        :return: A tuple of SQL ready prepared parameters
+        :rtype: tuple[str | None, ...]
         """
-        row: dict[str, Any] = dict(
+        row: dict[str, bytes | str | None] = dict(
             zip(
                 self.voter_keys,
                 voter_raw.strip().split(b"\t")

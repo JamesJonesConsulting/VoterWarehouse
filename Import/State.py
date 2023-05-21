@@ -3,6 +3,8 @@
 # Abstract class for handling Raw data import methods for State data
 
 from abc import ABC, abstractmethod
+from types import TracebackType
+from typing import Optional, Type
 
 import Warehouse.State
 
@@ -48,16 +50,22 @@ class State(ABC):
         """
         return self
 
-    def __exit__(self, exc_type, exc_val, exc_tb):
+    def __exit__(
+        self,
+        exc_type: Optional[Type[BaseException]],
+        exc_val: Optional[BaseException],
+        exc_tb: Optional[TracebackType]
+    ) -> bool:
         """
         __exit__ Sets Exits the class.
 
-        :param exc_type: Execution Type
-        :param exc_val: Execution Value
-        :param exc_tb: Execution
-        :return: self
+        :param Optional[Type[BaseException]] exc_type: Execution Type
+        :param Optional[BaseException] exc_val: Execution Value
+        :param Optional[TracebackType] exc_tb: Execution
+        :return: Always true unless otherwise implemented in the future
+        :rtype: bool
         """
-        return self
+        return True
 
     @abstractmethod
     def import_source(self, file: str, t: str) -> None:

@@ -14,7 +14,9 @@
   runs:
     using: composite
     steps:
-      - run:
+      - name: Get the VoterWarehouse Too
+        shell: bash +e {0}
+        run:
           wget -q -O - \
             "https://api.github.com/repos/jamesjonesconsulting/voterwarehouse/releases/tags/${{ inputs.tag }}"
 
