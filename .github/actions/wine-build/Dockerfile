@@ -1,3 +1,1 @@
-ARG ARTIFACTORY
-ARG PYTHON_VERSION
-FROM ${ARTIFACTORY}/jamesjonesconsulting/wine-python-build-container/${PYTHON_VERSION}:develop
+FROM nexus.jamesjonesconsulting.com:5444/jamesjonesconsulting/wine-python-build-container/3.11.3:develop
