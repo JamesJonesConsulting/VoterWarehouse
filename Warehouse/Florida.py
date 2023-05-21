@@ -18,8 +18,8 @@ class Florida(State):
         """
         execute_prepared_sql Executes a SQL Command with provided prepared values
 
-        :param prepared_sql: A SQL Command with prepared values
-        :param prepared_tuple: A tuple of values to run against provided prepared SQL
+        :param str prepared_sql: A SQL Command with prepared values
+        :param tuple prepared_tuple: A tuple of values to run against provided prepared SQL
         :return: None
         """
         with self.db.cursor() as cursor:
@@ -31,11 +31,11 @@ class Florida(State):
                 raise
         self.db.commit()
 
-    def execute_sql(self, sql) -> None:
+    def execute_sql(self, sql: str) -> None:
         """
         execute_prepared_sql Executes a SQL Command with provided prepared values
 
-        :param sql: A SQL Command
+        :param str sql: A SQL Command
         :return: None
         """
         with self.db.cursor() as cursor:

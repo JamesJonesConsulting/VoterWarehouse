@@ -1,9 +1,11 @@
 # -*- coding: utf-8 -*-
 
-# Handles Raw data import methods for FLorida data
+# Handles Raw data import methods for Florida data
 
 import datetime
 import zipfile
+from typing import Any
+
 import Warehouse.FloridaSQL
 from Import.State import State
 
@@ -105,9 +107,15 @@ class Florida(State):
         "email_address"
     ]
 
-    def parse_raw_history_into_tuple(self, history_raw, export_date):
-        # Build a temporary dictionary from raw voter binary string
-        row = dict(
+    def parse_raw_history_into_tuple(self, history_raw: bytes, export_date: str):
+        """
+        Build a temporary dictionary from raw voter binary string
+
+        :param export_date:
+        :param: bytes history_raw: A byte string containing a raw row of history data
+        :type history_raw: object
+        """
+        row: dict[str, Any] = dict(
             zip(
                 self.history_keys,
                 history_raw.strip().split(b"\t")
@@ -129,9 +137,15 @@ class Florida(State):
                 row[k] = datetime.datetime.strptime(row[k], "%m/%d/%Y").strftime('%Y-%m-%d')
         return tuple(row.values())
 
-    def parse_raw_voter_into_tuple(self, voter_raw, export_date):
-        # Build a temporary dictionary from raw voter binary string
-        row = dict(
+    def parse_raw_voter_into_tuple(self, voter_raw: bytes, export_date: str):
+        """
+        Build a temporary dictionary from raw voter binary string
+
+        :param bytes voter_raw:
+        :param str export_date:
+        :return:
+        """
+        row: dict[str, Any] = dict(
             zip(
                 self.voter_keys,
                 voter_raw.strip().split(b"\t")
@@ -159,12 +173,12 @@ class Florida(State):
         row["email_address"] = row["email_address"].lower()
         return tuple(row.values())
 
-    def import_source(self, file, t) -> None:
+    def import_source(self, file: str, t: str) -> None:
         """
         import_source Reads in a Voter or History File in Zip format and sends it to the datastore.
 
-        :param t: String representing the type of zip file to import
-        :param file: The full path to the Zip file
+        :param str t: String representing the type of zip file to import
+        :param str file: The full path to the Zip file
         :return: None
         """
         self.db.init_schema()
@@ -191,5 +205,3 @@ class Florida(State):
         except Exception as error:
             print('Caught this error: ' + repr(error))
             raise
-
-

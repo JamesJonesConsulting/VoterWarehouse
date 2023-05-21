@@ -27,15 +27,15 @@ class State(ABC):
     @abstractmethod
     def state_designation(self):
         """
-        State/Province/etc - Any top level area for a country
+        State/Province/etc. - Any top level area for a country
         """
         pass
 
-    def __init__(self, config_file):
+    def __init__(self, config_file: str) -> None:
         """
         __init__ Sets the config dictionary of database credentials into variable named 'db'.
 
-        :param config_file: Path to the YAML config file
+        :param str config_file: Path to the YAML config file
         :return: None
         """
 
@@ -50,7 +50,8 @@ class State(ABC):
         """
         __enter__ Creates the database connection and sets it to the class as 'db'
 
-        :return: Instance of Warehouse.Florida
+        :return: Instance of Warehouse.State
+        :rtype: Warehouse.State
         """
         try:
             self.db = pymysql.connect(

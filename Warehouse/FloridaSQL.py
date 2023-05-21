@@ -1,15 +1,16 @@
 # -*- coding: utf-8 -*-
 
-# Handles Database SQL methods for FLorida data
+# Handles Database SQL methods for Florida data
 
-def create_database(database) -> str:
+def create_database(database: str) -> str:
     """
     create_database Returns SQL string to create the schema
 
-    :param database: The name of the schema
+    :param str database: The name of the schema
     :return: SQL String
     """
-    return f"CREATE DATABASE IF NOT EXISTS `{database}` /*!40100 DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci */;"
+    return f"CREATE DATABASE IF NOT EXISTS `{database}` /*!40100 DEFAULT CHARACTER SET utf8mb4 COLLATE " \
+           f"utf8mb4_unicode_ci */;"
 
 
 def create_histories_table() -> str:
@@ -17,6 +18,7 @@ def create_histories_table() -> str:
     create_histories_table Returns SQL string to create the Voter Histories table
 
     :return: SQL String
+    :rtype: str
     """
     return """CREATE TABLE IF NOT EXISTS `Histories` (
           `county_code` char(3) COLLATE utf8_unicode_ci NOT NULL DEFAULT '',
@@ -40,6 +42,7 @@ def set_history() -> str:
     set_voter Returns SQL string to replace the Histories records
 
     :return: SQL String
+    :rtype: str
     """
     return """REPLACE
         INTO
@@ -63,6 +66,7 @@ def set_voter() -> str:
     set_voter Returns SQL string to replace the Voter records
 
     :return: SQL String
+    :rtype str
     """
     return """REPLACE
         INTO
@@ -152,6 +156,7 @@ def create_voters_table() -> str:
     create_voters_table Returns SQL string to create the Voter table
 
     :return: SQL String
+    :rtype: str
     """
     return """CREATE TABLE IF NOT EXISTS `Voters` (
           `voter_id` bigint(18) unsigned NOT NULL,

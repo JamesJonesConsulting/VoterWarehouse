@@ -4,6 +4,8 @@
 
 from abc import ABC, abstractmethod
 
+import Warehouse.State
+
 
 class State(ABC):
     """
@@ -29,11 +31,11 @@ class State(ABC):
     def suppress_keys(self):
         pass
 
-    def __init__(self, db):
+    def __init__(self, db: Warehouse.State) -> None:
         """
         __init__ Sets the instance of Warehouse.Florida to a class variable named 'db'.
 
-        :param db: An instance of Warehouse.Florida
+        :param Warehouse.State db: An instance of Warehouse.State
         :return: None
         """
         self.db = db
@@ -58,7 +60,7 @@ class State(ABC):
         return self
 
     @abstractmethod
-    def import_source(self, file, t) -> None:
+    def import_source(self, file: str, t: str) -> None:
         """
         import_source Reads in a Voter or History File in Zip format and sends it to the datastore.
 

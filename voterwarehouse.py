@@ -1,11 +1,11 @@
 # -*- coding: utf-8 -*-
+import argparse
+import importlib
+import os
+
+from Warehouse.version import __version__
 
 # VoterWarehouse command-line Voter and Voter History handling tool
-
-import os
-import argparse
-import pydoc
-from Warehouse.version import __version__
 
 
 implemented_states = [
@@ -23,8 +23,14 @@ def import_type(args):
     try:
         if args.state in implemented_states:
             if os.path.isfile(args.config):
-                with pydoc.locate(f"Warehouse.{args.state}.{args.state}")(args.config) as state_db:
-                    with pydoc.locate(f"Import.{args.state}.{args.state}")(state_db) as state:
+                with getattr(
+                    importlib.import_module(f"Warehouse.{args.state}"),
+                    f"{args.state}"
+                )(args.config) as state_db:
+                    with getattr(
+                        importlib.import_module(f"Import.{args.state}"),
+                        f"{args.state}"
+                    )(state_db) as state:
                         if args.file is not None:
                             if os.path.isfile(args.file):
                                 if args.type in state.valid_import_types.keys():
@@ -86,4 +92,3 @@ if __name__ == '__main__':
     except Exception as e:
         print('Caught this error: ' + repr(e))
         raise
-
