@@ -1,0 +1,7 @@
+ARG ARTIFACTORY
+ARG PYTHON_VERSION
+FROM ${ARTIFACTORY}/jamesjonesconsulting/wine-python-build-container/${PYTHON_VERSION}:develop
+
+WORKDIR /work
+RUN /usr/bin/python -m pip install .
+RUN /usr/bin/python build.py
