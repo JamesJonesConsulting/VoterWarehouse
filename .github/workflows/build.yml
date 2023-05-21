@@ -52,7 +52,7 @@ jobs:
           podman build --no-cache \
             --build-arg PYTHON_VERSION=${{ env.python-win-version }} \
             --build-arg ARTIFACTORY=${{ env.registry-proxy }} \
-            -f Dockerfile.ubuntu \
+            -f Dockerfile.wine.python \
             -v "$(pwd):/work:Z" .
       - name: Generate Versions
         id: package-versions
