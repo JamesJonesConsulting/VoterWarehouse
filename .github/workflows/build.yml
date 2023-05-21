@@ -56,7 +56,7 @@ jobs:
             DEB_VER=$(echo "$GITHUB_REF_NAME" | sed 's|_|-|g')
             echo "deb=$DEB_VER" >> $GITHUB_OUTPUT
           else
-            VERSION=$(./dist/${binary-basename} -v)
+            VERSION=$(./dist/${{ env.binary-basename }} -v)
             VERSION+=$(echo "~${GITHUB_REF_NAME}" | sed "s|/${VERSION}||g" | sed 's|/|-|g')
             echo "standard=$VERSION" >> $GITHUB_OUTPUT
             echo "rpm=$VERSION" >> $GITHUB_OUTPUT
@@ -72,7 +72,7 @@ jobs:
           python-version: '3.11.3'
       - name: Build the RPM package
         run: |
-          fpm -s dir -t rpm -n ${binary-basename} \
+          fpm -s dir -t rpm -n ${{ env.binary-basename }} \
             -v ${{ steps.package-versions.outputs.rpm }} \
             --iteration ${GITHUB_RUN_NUMBER} \
             --description "VoterWarehouse: Imports and Extracts Voter and History data" \
@@ -80,9 +80,9 @@ jobs:
             --license "LGPL-3.0" --vendor "James Jones" --maintainer "James Jones <jamjon3@gmail.com>" \
             --config-files /etc/VoterWarehouse/config.yml \
             -p ./dist \
-            ./dist/${binary-basename}=/usr/bin/${binary-basename} \
+            ./dist/${{ env.binary-basename }}=/usr/bin/${{ env.binary-basename }} \
             ./config.sample.yml=/etc/VoterWarehouse/config.yml
-          PACKAGE_FILE=$(find . -type f -name "${binary-basename}*.rpm")
+          PACKAGE_FILE=$(find . -type f -name "${{ env.binary-basename }}*.rpm")
           rpm --import https://nexus.jamesjonesconsulting.com/repository/gpg/RPM-GPG-KEY-JAMJON3
           echo "${{ secrets.JAMJON3_RPM_SIGN_GPG_KEY }}" | base64 -d > key.gpg
           echo "${{ secrets.JAMJON3_RPM_SIGN_GPG_SECRET_KEY }}" | base64 -d > private.gpg
@@ -102,7 +102,7 @@ jobs:
           NEXUS_YUM_REPO: https://nexus.jamesjonesconsulting.com/repository/yum-hosted/voting/
       - name: Build the DEB package
         run: |
-          fpm -s dir -t deb -n ${binary-basename} \
+          fpm -s dir -t deb -n ${{ env.binary-basename }} \
             -v ${{ steps.package-versions.outputs.deb }} \
             --iteration ${GITHUB_RUN_NUMBER} \
             --description "VoterWarehouse: Imports and Extracts Voter and History data" \
@@ -110,7 +110,7 @@ jobs:
             --license "LGPL-3.0" --vendor "James Jones" \
             --config-files /etc/VoterWarehouse/config.yml \
             -p ./dist \
-            ./dist/${binary-basename}=/usr/bin/${binary-basename} \
+            ./dist/${{ env.binary-basename }}=/usr/bin/${{ env.binary-basename }} \
             ./config.sample.yml=/etc/VoterWarehouse/config.yml
           echo "${{ secrets.JAMJON3_RPM_SIGN_GPG_KEY }}" | base64 -d > dist/key.gpg
           echo "${{ secrets.JAMJON3_RPM_SIGN_GPG_SECRET_KEY }}" | base64 -d > dist/private.gpg
@@ -119,7 +119,7 @@ jobs:
             --build-arg REGISTRY_PROXY=${{ env.registry-proxy }} \
             -f Dockerfile.ubuntu \
             -v "$(pwd)/dist:/dist:Z" .
-          PACKAGE_FILE=$(find . -type f -name "${binary-basename}*.deb")          
+          PACKAGE_FILE=$(find . -type f -name "${{ env.binary-basename }}*.deb")          
           apt_repos=(
             apt-focal-hosted
           )
@@ -142,7 +142,7 @@ jobs:
       - name: Create Archive of the Linux Commandline
         run: |
           cd dist
-          zip -rm "${binary-basename}-${{ steps.package-versions.outputs.standard }}-linux-x86_64.zip" "${binary-basename}"
+          zip -rm "${{ env.binary-basename }}-${{ steps.package-versions.outputs.standard }}-linux-x86_64.zip" "${{ env.binary-basename }}"
       - name: Archive tool artifacts
         if: ${{ !startsWith(github.ref,'refs/tags/') }}
         uses: actions/upload-artifact@v3
