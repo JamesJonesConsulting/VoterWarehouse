@@ -45,7 +45,7 @@ jobs:
       # Sets up the python virtual environment, pulls the requirements and builds the binary
       - name: Build the Linux and Windows binaries
         run: |
-          python3 -m vwenv vwenv
+          python3 -m venv vwenv
           source vwenv/bin/activate
           python -m pip install .
           python build.py
