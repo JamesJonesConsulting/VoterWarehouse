@@ -2,4 +2,4 @@ PyMySQL==1.0.3
 PyYAML==6.0
 sphinx
 nose
-pyinstaller==5.7.0
+pyinstaller==5.10.1
