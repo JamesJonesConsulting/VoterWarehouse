@@ -70,7 +70,7 @@ Installing the RPM that is GPG Signed is easy off my Nexus Repository.
 
 .. code:: commandline
 
-    curl https://nexus.jamjon3.sytes.net/repository/package-config/yum/jamjon3-voters.repo | sudo tee /etc/yum.repos.d/jamjon3-voters.repo
+    curl https://nexus.jamesjonesconsulting.com/repository/package-config/yum/jamjon3-voters.repo | sudo tee /etc/yum.repos.d/jamjon3-voters.repo
     sudo yum install voterwarehouse
   
 Command line syntax

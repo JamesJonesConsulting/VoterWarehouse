@@ -1,30 +1,32 @@
 # -*- coding: utf-8 -*-
+import argparse
+import importlib
+import os
+
+from Warehouse.version import __version__
+from Warehouse.ImplementedStates import __implemented_states__
 
 # VoterWarehouse command-line Voter and Voter History handling tool
 
-import os
-import argparse
-import pydoc
-from version import __version__
 
-
-implemented_states = [
-    "Florida"
-]
-
-
-def import_type(args):
+def import_type(args: argparse.Namespace) -> None:
     """
     import_type Initializes conditional importing workflows based on what type was requested
 
-    :param args: Argument dictionary to be evaluated by import types
+    :param argparse.Namespace args: Argument dictionary to be evaluated by import types
     :return: None
     """
     try:
-        if args.state in implemented_states:
+        if args.state in __implemented_states__:
             if os.path.isfile(args.config):
-                with pydoc.locate(f"Warehouse.{args.state}.{args.state}")(args.config) as state_db:
-                    with pydoc.locate(f"Import.{args.state}.{args.state}")(state_db) as state:
+                with getattr(
+                    importlib.import_module(f"Warehouse.{args.state}"),
+                    f"{args.state}"
+                )(args.config) as state_db:
+                    with getattr(
+                        importlib.import_module(f"Import.{args.state}"),
+                        f"{args.state}"
+                    )(state_db) as state:
                         if args.file is not None:
                             if os.path.isfile(args.file):
                                 if args.type in state.valid_import_types.keys():
@@ -47,11 +49,11 @@ def import_type(args):
         raise
 
 
-def main(args=None):
+def main(args: argparse.Namespace) -> None:
     """
     main Sets up the conditional actions workflow based on the specified action
 
-    :param args: Argument dictionary to be evaluated by action types
+    :param argparse.Namespace args: Argument dictionary to be evaluated by action types
     :return: None
     """
     try:
@@ -76,14 +78,40 @@ if __name__ == '__main__':
     """
     try:
         parser = argparse.ArgumentParser()
-        parser.add_argument("-s", "--state", help="The State Name", default="Florida")
-        parser.add_argument("-a", "--action", help="Action")
-        parser.add_argument("-t", "--type", help="Type")
-        parser.add_argument("-f", "--file", help="File")
-        parser.add_argument("-c", "--config", help="Config YAML File", default="/etc/VoterWarehouse/config.yml")
-        parser.add_argument('-v', '--version', action='version', version=__version__)
+        parser.add_argument(
+            "-s",
+            "--state",
+            help="The State Name",
+            default="Florida"
+        )
+        parser.add_argument(
+            "-a",
+            "--action",
+            help="Action"
+        )
+        parser.add_argument(
+            "-t",
+            "--type",
+            help="Type"
+        )
+        parser.add_argument(
+            "-f",
+            "--file",
+            help="File"
+        )
+        parser.add_argument(
+            "-c",
+            "--config",
+            help="Config YAML File",
+            default="/etc/VoterWarehouse/config.yml"
+        )
+        parser.add_argument(
+            '-v',
+            '--version',
+            action='version',
+            version=__version__
+        )
         main(parser.parse_args())
     except Exception as e:
         print('Caught this error: ' + repr(e))
         raise
-
