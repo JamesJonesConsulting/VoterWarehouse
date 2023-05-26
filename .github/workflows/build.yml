@@ -71,7 +71,7 @@ jobs:
             echo "rpm=$VERSION" >> $GITHUB_OUTPUT
             DEB_VER=$(echo "$VERSION" | sed 's|_|-|g')
             echo "deb=$DEB_VER" >> $GITHUB_OUTPUT
-            NUGET_VERSION+=$(echo "+${GITHUB_REF_NAME}" | sed "s|/${NUGET_VERSION}||g" | sed 's|/|-|g')
+            NUGET_VERSION+=$(echo "-${GITHUB_REF_NAME}" | sed "s|/${NUGET_VERSION}||g" | sed 's|/|-|g')
             echo "nuget=$NUGET_VERSION" >> $GITHUB_OUTPUT
           fi
 #      - name: Build the Windows binary
