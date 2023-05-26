@@ -62,13 +62,17 @@ jobs:
             echo "rpm=$GITHUB_REF_NAME" >> $GITHUB_OUTPUT
             DEB_VER=$(echo "$GITHUB_REF_NAME" | sed 's|_|-|g')
             echo "deb=$DEB_VER" >> $GITHUB_OUTPUT
+            echo "nuget=$VERSION" >> $GITHUB_OUTPUT
           else
             VERSION=$(./dist/${{ env.binary-basename }} -v)
+            NUGET_VERSION="$VERSION"
             VERSION+=$(echo "~${GITHUB_REF_NAME}" | sed "s|/${VERSION}||g" | sed 's|/|-|g')
             echo "standard=$VERSION" >> $GITHUB_OUTPUT
             echo "rpm=$VERSION" >> $GITHUB_OUTPUT
             DEB_VER=$(echo "$VERSION" | sed 's|_|-|g')
             echo "deb=$DEB_VER" >> $GITHUB_OUTPUT
+            NUGET_VERSION+=$(echo "+${GITHUB_REF_NAME}" | sed "s|/${NUGET_VERSION}||g" | sed 's|/|-|g')
+            echo "nuget=$NUGET_VERSION" >> $GITHUB_OUTPUT
           fi
 #      - name: Build the Windows binary
 #        uses: "./.github/actions/wine-build"
@@ -156,7 +160,7 @@ jobs:
       - name: Chocolatey Action
         uses: crazy-max/ghaction-chocolatey@v2.2.0
         with:
-          args: pack --version ${{ steps.package-versions.outputs.standard }} --outputdirectory dist
+          args: pack --version ${{ steps.package-versions.outputs.nuget }} --outputdirectory dist
       - name: Publish Chocolatey package to hosted Chocolatey repo on Nexus
         run: |
           PACKAGE_FILE=$(find . -type f -name "*.nupkg")
