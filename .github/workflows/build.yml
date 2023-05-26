@@ -149,8 +149,21 @@ jobs:
       - name: Create Zip Archives of the Linux/Windows CLI
         run: |
           cd dist
+          rm -f ../tools/*.exe
+          cp "${{ env.binary-basename }}.exe" ../tools
           zip -rm "${{ env.binary-basename }}-${{ steps.package-versions.outputs.standard }}-linux-x86_64.zip" "${{ env.binary-basename }}"
           zip -rm "${{ env.binary-basename }}-${{ steps.package-versions.outputs.standard }}-windows-x86_64.zip" "${{ env.binary-basename }}.exe"
+      - name: Chocolatey Action
+        uses: crazy-max/ghaction-chocolatey@v2.2.0
+        with:
+          args: pack --version ${{ steps.package-versions.outputs.standard }} --outputdirectory dist
+      - name: Publish Chocolatey package to hosted Chocolatey repo on Nexus
+        run: |
+          PACKAGE_FILE=$(find . -type f -name "*.nupkg")
+          curl --verbose -k -X PUT \
+            ${{ vars.HOME_NEXUS_NUGET_HOSTED_REPO }} \
+            -H "X-NuGet-ApiKey: ${{ secrets.HOME_NEXUS_NUGET_API_KEY }}" \
+            -F "data=dist/${PACKAGE_FILE}"
       - name: Archive tool artifacts
         if: ${{ !startsWith(github.ref,'refs/tags/') }}
         uses: actions/upload-artifact@v3
