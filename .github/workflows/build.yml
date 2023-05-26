@@ -1,11 +1,12 @@
-name: Build VoterWarehouse
+name: Build VoterWarehouse and publish artifacts
 on: push
 env:
   registry-proxy: nexus.jamesjonesconsulting.com:5444
   binary-basename: voterwarehouse
   python-win-version: 3.11.3
 jobs:
-  build-job:
+  build-publish-job:
+    name: Building and publishing artifacts
     runs-on: self-hosted
     container:
       image: nexus.jamesjonesconsulting.com:5444/podman/stable:latest
@@ -21,18 +22,15 @@ jobs:
         run: |
           dnf install -y rpm-build rpm-sign rubygems ruby-devel gcc gcc-c++ make podman-docker \
             libffi-devel python3 python3-pip python3-virtualenv python3-wheel upx wget curl pinentry
-
       # Downloads a copy of the code in your repository before running CI tests
       - name: Check out repository code
         uses: actions/checkout@v3
-
       - name: Docker Login
         uses: azure/docker-login@v1
         with:
           login-server: ${{ env.registry-proxy }}
           username: ${{ secrets.HOME_NEXUS_DOCKER_USER }}
           password: ${{ secrets.HOME_NEXUS_DOCKER_PASSWORD }}
-
       # Sets up Rubygems packaging pinentry-program /usr/bin/pinentry-curses
       - name: Setup FPM with it's dependent package for building a package
         run: |
