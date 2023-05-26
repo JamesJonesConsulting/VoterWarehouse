@@ -19,7 +19,7 @@ jobs:
       # Sets up RPM build tools and Ruby Gems
       - name: Install RPM dependencies
         run: |
-          dnf install -y rpm-build rpm-sign rubygems ruby-devel gcc gcc-c++ make \
+          dnf install -y rpm-build rpm-sign rubygems ruby-devel gcc gcc-c++ make podman-docker \
             libffi-devel python3 python3-pip python3-virtualenv python3-wheel upx wget curl pinentry
 
       # Downloads a copy of the code in your repository before running CI tests
