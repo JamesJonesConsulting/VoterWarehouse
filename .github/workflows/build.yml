@@ -1,11 +1,12 @@
-name: Build VoterWarehouse
+name: Build VoterWarehouse and publish artifacts
 on: push
 env:
   registry-proxy: nexus.jamesjonesconsulting.com:5444
   binary-basename: voterwarehouse
   python-win-version: 3.11.3
 jobs:
-  build-job:
+  build-publish-job:
+    name: Building and publishing artifacts
     runs-on: self-hosted
     container:
       image: nexus.jamesjonesconsulting.com:5444/podman/stable:latest
@@ -19,20 +20,18 @@ jobs:
       # Sets up RPM build tools and Ruby Gems
       - name: Install RPM dependencies
         run: |
-          dnf install -y rpm-build rpm-sign rubygems ruby-devel gcc gcc-c++ make \
-            libffi-devel python3 python3-pip python3-virtualenv python3-wheel upx wget curl pinentry
-
+          dnf install -y rpm-build rpm-sign rubygems ruby-devel gcc gcc-c++ make podman-docker \
+            libffi-devel python3 python3-pip python3-virtualenv python3-wheel upx wget curl pinentry \
+            dotnet-sdk-7.0
       # Downloads a copy of the code in your repository before running CI tests
       - name: Check out repository code
         uses: actions/checkout@v3
-
       - name: Docker Login
         uses: azure/docker-login@v1
         with:
           login-server: ${{ env.registry-proxy }}
           username: ${{ secrets.HOME_NEXUS_DOCKER_USER }}
           password: ${{ secrets.HOME_NEXUS_DOCKER_PASSWORD }}
-
       # Sets up Rubygems packaging pinentry-program /usr/bin/pinentry-curses
       - name: Setup FPM with it's dependent package for building a package
         run: |
@@ -62,13 +61,17 @@ jobs:
             echo "rpm=$GITHUB_REF_NAME" >> $GITHUB_OUTPUT
             DEB_VER=$(echo "$GITHUB_REF_NAME" | sed 's|_|-|g')
             echo "deb=$DEB_VER" >> $GITHUB_OUTPUT
+            echo "nuget=$VERSION" >> $GITHUB_OUTPUT
           else
             VERSION=$(./dist/${{ env.binary-basename }} -v)
+            NUGET_VERSION="$VERSION"
             VERSION+=$(echo "~${GITHUB_REF_NAME}" | sed "s|/${VERSION}||g" | sed 's|/|-|g')
             echo "standard=$VERSION" >> $GITHUB_OUTPUT
             echo "rpm=$VERSION" >> $GITHUB_OUTPUT
             DEB_VER=$(echo "$VERSION" | sed 's|_|-|g')
             echo "deb=$DEB_VER" >> $GITHUB_OUTPUT
+            NUGET_VERSION+=$(echo "-${GITHUB_REF_NAME}" | sed "s|/${NUGET_VERSION}||g" | sed 's|/|-|g')
+            echo "nuget=$NUGET_VERSION" >> $GITHUB_OUTPUT
           fi
 #      - name: Build the Windows binary
 #        uses: "./.github/actions/wine-build"
@@ -99,8 +102,10 @@ jobs:
           rpm --define "_gpg_name James Jones <jamjon3@gmail.com>" \
             --define "_gpg_sign_cmd_extra_args --pinentry-mode loopback --passphrase ${{ secrets.JAMJON3_RPM_SIGN_PASSPHRASE }}" \
             --addsign $PACKAGE_FILE
-          curl -u "$YUM_USER:$YUM_PASSWORD" --upload-file $PACKAGE_FILE $NEXUS_YUM_REPO
-          # package_cloud push $PACKAGE_CLOUD_REPO $PACKAGE_FILE
+          if [[ "$GITHUB_REF" =~ ^refs/tags.* ]]; then
+            curl -u "$YUM_USER:$YUM_PASSWORD" --upload-file $PACKAGE_FILE $NEXUS_YUM_REPO
+            # package_cloud push $PACKAGE_CLOUD_REPO $PACKAGE_FILE
+          fi
         shell: bash
         env:
           PACKAGE_CLOUD_REPO: jamjon3/yum/rpm_any/rpm_any
@@ -127,19 +132,21 @@ jobs:
             -f Dockerfile.ubuntu \
             -v "$(pwd)/dist:/dist:Z" .
           PACKAGE_FILE=$(find . -type f -name "${{ env.binary-basename }}*.deb")          
-          apt_repos=(
-            apt-focal-hosted
-          )
-          for repo in ${apt_repos[@]}; do
-            DATA_BINARY='@'
-            DATA_BINARY+="$PACKAGE_FILE"
-            echo "$DATA_BINARY"
-            echo "${NEXUS_APT_REPOSITORY_ROOT}${repo}/"
-            curl -u "${APT_USER}:${APT_PASSWORD}" \
-              -H "Content-Type: multipart/form-data" \
-              --data-binary "${DATA_BINARY}" "${NEXUS_APT_REPOSITORY_ROOT}${repo}/"
-          done
-          # package_cloud push $PACKAGE_CLOUD_REPO $PACKAGE_FILE
+          if [[ "$GITHUB_REF" =~ ^refs/tags.* ]]; then
+            apt_repos=(
+              apt-focal-hosted
+            )
+            for repo in ${apt_repos[@]}; do
+              DATA_BINARY='@'
+              DATA_BINARY+="$PACKAGE_FILE"
+              echo "$DATA_BINARY"
+              echo "${NEXUS_APT_REPOSITORY_ROOT}${repo}/"
+              curl -u "${APT_USER}:${APT_PASSWORD}" \
+                -H "Content-Type: multipart/form-data" \
+                --data-binary "${DATA_BINARY}" "${NEXUS_APT_REPOSITORY_ROOT}${repo}/"
+            done
+            # package_cloud push $PACKAGE_CLOUD_REPO $PACKAGE_FILE
+          fi
         shell: bash
         env:
           PACKAGE_CLOUD_REPO: jamjon3/deb/any/any
@@ -149,8 +156,21 @@ jobs:
       - name: Create Zip Archives of the Linux/Windows CLI
         run: |
           cd dist
+          rm -f ../tools/*.exe
+          cp "${{ env.binary-basename }}.exe" ../tools
           zip -rm "${{ env.binary-basename }}-${{ steps.package-versions.outputs.standard }}-linux-x86_64.zip" "${{ env.binary-basename }}"
           zip -rm "${{ env.binary-basename }}-${{ steps.package-versions.outputs.standard }}-windows-x86_64.zip" "${{ env.binary-basename }}.exe"
+      - name: Chocolatey Action
+        uses: crazy-max/ghaction-chocolatey@v2.2.0
+        with:
+          args: pack --version ${{ steps.package-versions.outputs.nuget }} --outputdirectory dist
+      - name: Publish Chocolatey package to hosted Chocolatey repo on Nexus
+        if: ${{ startsWith(github.ref,'refs/tags/') }}
+        run: |
+          PACKAGE_FILE=$(find . -type f -name "*.nupkg")
+          dotnet nuget push "${PACKAGE_FILE}" \
+            -k ${{ secrets.HOME_NEXUS_NUGET_API_KEY }} \
+            -s ${{ vars.HOME_NEXUS_NUGET_HOSTED_REPO }}
       - name: Archive tool artifacts
         if: ${{ !startsWith(github.ref,'refs/tags/') }}
         uses: actions/upload-artifact@v3
