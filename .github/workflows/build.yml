@@ -163,7 +163,7 @@ jobs:
       - name: Publish Chocolatey package to hosted Chocolatey repo on Nexus
         run: |
           PACKAGE_FILE=$(find . -type f -name "*.nupkg")
-          dotnet nuget push "dist/${PACKAGE_FILE}" \
+          dotnet nuget push "${PACKAGE_FILE}" \
             -k ${{ secrets.HOME_NEXUS_NUGET_API_KEY }} \
             -s ${{ vars.HOME_NEXUS_NUGET_HOSTED_REPO }}
       - name: Archive tool artifacts
