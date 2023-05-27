@@ -111,7 +111,10 @@ if __name__ == '__main__':
             action='version',
             version=__version__
         )
-        main(parser.parse_args())
+        try:
+            main(parser.parse_args())
+        except KeyboardInterrupt:
+            print("\nShutdown by keyboard interrupt...exiting")
     except Exception as e:
         print('Caught this error: ' + repr(e))
         raise

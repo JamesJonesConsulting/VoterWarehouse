@@ -16,7 +16,8 @@ Move-Item "$toolsDir\$executable" "$scriptDir" -Force -ErrorAction SilentlyConti
 Install-ChocolateyPowershellCommand -PackageName "$packageName" -PSFileFullPath "$scriptDir\$executable"
 
 # Cleanup
-Remove-Item "$toolsDir\voterwarehouse.*" -Exclude voterwarehouse.ico -Force -ErrorAction SilentlyContinue | Out-Null
+Remove-Item "$toolsDir\voterwarehouse.*" -Exclude VoterWarehouse.ico -Force -ErrorAction SilentlyContinue | Out-Null
+Remove-Item "$toolsDir\voterwarehouse.*" -Exclude VoterWarehouse.png -Force -ErrorAction SilentlyContinue | Out-Null
 if ($ENV:Path -NotMatch "VoterWarehouse"){ Install-ChocolateyPath "$scriptDir" "Machine" ; refreshenv }
 
 # Create Start Menu icon
