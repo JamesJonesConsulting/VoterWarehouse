@@ -1,6 +1,6 @@
 ARG ARTIFACTORY
 ARG PYTHON_VERSION
-FROM ${ARTIFACTORY}/jamesjonesconsulting/wine-python-build-container/${PYTHON_VERSION}:develop
+FROM ${ARTIFACTORY}/jamesjonesconsulting/wine-python-build-container/${PYTHON_VERSION}:latest
 
 WORKDIR /work
 RUN /usr/bin/python -m pip install .
