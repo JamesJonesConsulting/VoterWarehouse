@@ -61,7 +61,7 @@ jobs:
             echo "rpm=$GITHUB_REF_NAME" >> $GITHUB_OUTPUT
             DEB_VER=$(echo "$GITHUB_REF_NAME" | sed 's|_|-|g')
             echo "deb=$DEB_VER" >> $GITHUB_OUTPUT
-            echo "nuget=$VERSION" >> $GITHUB_OUTPUT
+            echo "nuget=$GITHUB_REF_NAME" >> $GITHUB_OUTPUT
           else
             VERSION=$(./dist/${{ env.binary-basename }} -v)
             NUGET_VERSION="$VERSION"
