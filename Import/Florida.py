@@ -17,11 +17,13 @@ class Florida(State):
     valid_import_types = {
         "voters": {
             "sql": "set_voter",
-            "parse": "parse_raw_voter_into_tuple"
+            "parse": "parse_raw_voter_into_tuple",
+            "batch_size": 200000
         },
         "histories": {
             "sql": "set_history",
-            "parse": "parse_raw_history_into_tuple"
+            "parse": "parse_raw_history_into_tuple",
+            "batch_size": 200000
         }
     }
 
@@ -191,18 +193,38 @@ class Florida(State):
                     print(f"Normal size: {info.file_size} bytes")
                     print(f"Compressed size: {info.compress_size} bytes")
                     print("-" * 20)
+                    data = []
+                    records_imported = 0
                     for line in archive.read(info.filename).split(b"\n"):
                         if len(line.strip()) >= 3:
                             if t in self.valid_import_types.keys():
-                                self.db.execute_prepared_sql(
-                                    getattr(Warehouse.FloridaSQL, self.valid_import_types[t]["sql"])(),
-                                    getattr(self, self.valid_import_types[t]["parse"])(
+                                if len(data) < self.db.batch_limits[t]:
+                                    data.append(getattr(self, self.valid_import_types[t]["parse"])(
                                         line,
                                         datetime.datetime(*info.date_time).strftime("%Y-%m-%d")
+                                    ))
+                                else:
+                                    print(f"Importing batch of {len(data)} records from {info.filename}..")
+                                    self.db.executemany_prepared_sql(
+                                        getattr(Warehouse.FloridaSQL, self.valid_import_types[t]["sql"])(),
+                                        data
                                     )
-                                )
+                                    records_imported += len(data)
+                                    data = []
                             else:
                                 raise ValueError(f"Usage: Type 't' {t} is not valid")
+                    if len(data) > 0:
+                        if t in self.valid_import_types.keys():
+                            print(f"Importing batch of {len(data)} records from {info.filename}..")
+                            self.db.executemany_prepared_sql(
+                                getattr(Warehouse.FloridaSQL, self.valid_import_types[t]["sql"])(),
+                                data
+                            )
+                            records_imported += len(data)
+                        else:
+                            raise ValueError(f"Usage: Type 't' {t} is not valid")
+                    print(f"{records_imported} total records imported")
+                    print("-" * 20)
         except Exception as error:
             print('Caught this error: ' + repr(error))
             raise

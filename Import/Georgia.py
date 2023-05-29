@@ -64,21 +64,41 @@ class Georgia(State):
                     print(f"Normal size: {info.file_size} bytes")
                     print(f"Compressed size: {info.compress_size} bytes")
                     print("-" * 20)
+                    data = []
+                    records_imported = 0
                     with archive.open(info.filename, "r") as f:
                         reader = csv.DictReader(
                             io.TextIOWrapper(f, newline='')
                         )
                         for row in reader:
                             if t in self.valid_import_types.keys():
-                                self.db.execute_prepared_sql(
-                                    getattr(Warehouse.GeorgiaSQL, self.valid_import_types[t]["sql"])(),
-                                    getattr(self, self.valid_import_types[t]["parse"])(
+                                if len(data) < self.db.batch_limits[t]:
+                                    data.append(getattr(self, self.valid_import_types[t]["parse"])(
                                         row
+                                    ))
+
+                                else:
+                                    print(f"Importing batch of {len(data)} records from {info.filename}..")
+                                    self.db.executemany_prepared_sql(
+                                        getattr(Warehouse.GeorgiaSQL, self.valid_import_types[t]["sql"])(),
+                                        data
                                     )
-                                )
+                                    records_imported += len(data)
+                                    data = []
                             else:
                                 raise ValueError(f"Usage: Type 't' {t} is not valid")
-
+                        if len(data) > 0:
+                            if t in self.valid_import_types.keys():
+                                print(f"Importing batch of {len(data)} records from {info.filename}..")
+                                self.db.executemany_prepared_sql(
+                                    getattr(Warehouse.GeorgiaSQL, self.valid_import_types[t]["sql"])(),
+                                    data
+                                )
+                                records_imported += len(data)
+                            else:
+                                raise ValueError(f"Usage: Type 't' {t} is not valid")
+                        print(f"{records_imported} total records imported")
+                        print("-" * 20)
         except Exception as error:
             print('Caught this error: ' + repr(error))
             raise
@@ -127,7 +147,7 @@ class Georgia(State):
                 ).index(name)
             ]
         else:
-            return  list(__counties__.keys())[
+            return list(__counties__.keys())[
                 list(__counties__.values()).index('UNKNOWN')
             ]
 
@@ -158,4 +178,3 @@ class Georgia(State):
             else:
                 history[k] = 0
         return tuple(history.values())
-

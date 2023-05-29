@@ -81,6 +81,23 @@ class State(ABC):
                 raise
         self.db.commit()
 
+    def executemany_prepared_sql(self, prepared_sql: str, prepared_list: list) -> None:
+        """
+        execute_prepared_sql Executes a SQL Command with provided prepared values
+
+        :param str prepared_sql: A SQL Command with prepared values
+        :param list prepared_list: A list of tuples to run against provided prepared SQL
+        :return: None
+        """
+        with self.db.cursor() as cursor:
+            # print(prepared_sql)
+            try:
+                cursor.executemany(prepared_sql, prepared_list)
+            except Exception as error:
+                print('Caught this error: ' + repr(error))
+                raise
+        self.db.commit()
+
     def __enter__(self):
         """
         __enter__ Creates the database connection and sets it to the class as 'db'
@@ -97,6 +114,13 @@ class State(ABC):
                 database=self.config["database"]["schema"],
                 cursorclass=pymysql.cursors.DictCursor
             )
+            if "batch" in self.config:
+                self.batch_limits = self.config["batch"]
+            else:
+                self.batch_limits = {
+                    "voters": 5000,
+                    "histories": 5000
+                }
         except Exception as error:
             print('Caught this error: ' + repr(error))
             raise
