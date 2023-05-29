@@ -1,3 +1,4 @@
 __implemented_states__ = [
-    "Florida"
+    "Florida",
+    "Georgia"
 ]
