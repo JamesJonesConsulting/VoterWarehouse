@@ -174,6 +174,8 @@ class Florida(State):
                 row[k] = ""
         # Ensuring email addresses are in lower case
         row["email_address"] = row["email_address"].lower()
+        if row["race"] == '':
+            row["race"] = None
         return tuple(row.values())
 
     def import_source(self, file: str, t: str) -> None:
