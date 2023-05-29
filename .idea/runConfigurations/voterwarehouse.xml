@@ -12,7 +12,7 @@
     <option name="ADD_CONTENT_ROOTS" value="true" />
     <option name="ADD_SOURCE_ROOTS" value="true" />
     <option name="SCRIPT_NAME" value="$PROJECT_DIR$/voterwarehouse.py" />
-    <option name="PARAMETERS" value="-a &quot;import&quot; -t &quot;voters&quot; -f &quot;$USER_HOME$/VoterExtract.zip&quot; -c $USER_HOME$/VoterWarehouse.yml" />
+    <option name="PARAMETERS" value="-a &quot;import&quot; -s &quot;Georgia&quot; -t &quot;histories&quot; -f &quot;$USER_HOME$/2023.zip&quot; -c $USER_HOME$/VoterWarehouse.yml" />
     <option name="SHOW_COMMAND_LINE" value="false" />
     <option name="EMULATE_TERMINAL" value="false" />
     <option name="MODULE_MODE" value="false" />

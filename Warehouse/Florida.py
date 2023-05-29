@@ -14,39 +14,6 @@ class Florida(State):
     country_designation = "UnitedStates"
     state_designation = "Florida"
 
-    def execute_prepared_sql(self, prepared_sql, prepared_tuple) -> None:
-        """
-        execute_prepared_sql Executes a SQL Command with provided prepared values
-
-        :param str prepared_sql: A SQL Command with prepared values
-        :param tuple prepared_tuple: A tuple of values to run against provided prepared SQL
-        :return: None
-        """
-        with self.db.cursor() as cursor:
-            # print(prepared_sql)
-            try:
-                cursor.execute(prepared_sql, prepared_tuple)
-            except Exception as error:
-                print('Caught this error: ' + repr(error))
-                raise
-        self.db.commit()
-
-    def execute_sql(self, sql: str) -> None:
-        """
-        execute_prepared_sql Executes a SQL Command with provided prepared values
-
-        :param str sql: A SQL Command
-        :return: None
-        """
-        with self.db.cursor() as cursor:
-            # print(sql)
-            try:
-                cursor.execute(sql)
-            except Exception as error:
-                print('Caught this error: ' + repr(error))
-                raise
-        self.db.commit()
-
     def init_schema(self) -> None:
         """
         init_schema Initializes the database, tables, etc.
