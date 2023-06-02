@@ -44,10 +44,6 @@ jobs:
       # Sets up the python virtual environment, pulls the requirements and builds the binary
       - name: Build the Linux and Windows binaries
         run: |
-#          python3 -m venv vwenv
-#          source vwenv/bin/activate
-#          python -m pip install .
-#          python build.py
           podman build --no-cache \
             --build-arg PYTHON_VERSION=${{ env.python-win-version }} \
             --build-arg ARTIFACTORY=${{ env.registry-proxy }} \
