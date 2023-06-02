@@ -15,7 +15,6 @@ jobs:
       credentials:
         username: ${{ secrets.HOME_NEXUS_DOCKER_USER }}
         password: ${{ secrets.HOME_NEXUS_DOCKER_PASSWORD }}
-
     steps:
       # Sets up RPM build tools and Ruby Gems
       - name: Install RPM dependencies
@@ -44,10 +43,11 @@ jobs:
       # Sets up the python virtual environment, pulls the requirements and builds the binary
       - name: Build the Linux and Windows binaries
         run: |
-          python3 -m venv vwenv
-          source vwenv/bin/activate
-          python -m pip install .
-          python build.py
+          podman build --no-cache \
+            --build-arg PYTHON_VERSION=${{ env.python-win-version }} \
+            --build-arg ARTIFACTORY=${{ env.registry-proxy }} \
+            -f Dockerfile.centos7 \
+            -v "$(pwd):/work:Z" .
           podman build --no-cache \
             --build-arg PYTHON_VERSION=${{ env.python-win-version }} \
             --build-arg ARTIFACTORY=${{ env.registry-proxy }} \

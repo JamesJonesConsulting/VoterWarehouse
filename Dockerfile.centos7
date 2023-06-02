@@ -1,0 +1,9 @@
+ARG ARTIFACTORY
+ARG PYTHON_VERSION
+FROM ${ARTIFACTORY}/ymdllc/rhel7-python/${PYTHON_VERSION}:latest
+
+WORKDIR /work
+
+RUN source scl_source enable rh-ruby26 && \
+    python -m pip install . && \
+    python build.py
