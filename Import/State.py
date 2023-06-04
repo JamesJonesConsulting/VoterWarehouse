@@ -18,21 +18,6 @@ class State(ABC):
     def valid_import_types(self):
         pass
 
-    @property
-    @abstractmethod
-    def history_keys(self):
-        pass
-
-    @property
-    @abstractmethod
-    def voter_keys(self):
-        pass
-
-    @property
-    @abstractmethod
-    def suppress_keys(self):
-        pass
-
     def __init__(self, db: Warehouse.State) -> None:
         """
         __init__ Sets the instance of Warehouse.Florida to a class variable named 'db'.
