@@ -129,7 +129,7 @@ class Florida(State):
                             reader = csv.DictReader(
                                 io.TextIOWrapper(
                                     f,
-                                    newline='\r\n',
+                                    newline='',
                                     encoding='utf-8',
                                     errors='ignore'
                                 ),
