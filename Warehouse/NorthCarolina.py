@@ -1,3 +1,5 @@
+# -*- coding: utf-8 -*-
+
 import Warehouse.NorthCarolinaSQL
 from Warehouse.State import State
 from Warehouse.NorthCarolinaCodes import __counties__

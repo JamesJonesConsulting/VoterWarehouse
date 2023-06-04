@@ -20,16 +20,6 @@ class State(ABC):
 
     @property
     @abstractmethod
-    def history_keys(self):
-        pass
-
-    @property
-    @abstractmethod
-    def voter_keys(self):
-        pass
-
-    @property
-    @abstractmethod
     def suppress_keys(self):
         pass
 

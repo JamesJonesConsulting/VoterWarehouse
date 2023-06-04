@@ -1,4 +1,5 @@
 # -*- coding: utf-8 -*-
+
 import csv
 # Handles Raw data import methods for North Carolina data
 
@@ -7,6 +8,8 @@ import io
 import zipfile
 
 import Warehouse.NorthCarolinaSQL
+from Warehouse.NorthCarolinaCodes import __history_import_map__
+from Warehouse.NorthCarolinaCodes import __voter_import_map__
 from Import.State import State
 
 
@@ -24,94 +27,6 @@ class NorthCarolina(State):
             "sql": "set_history",
             "parse": "parse_history_into_tuple"
         }
-    }
-
-    history_keys = [
-        "county_code",
-        "county_name",
-        "voter_id",
-        "election_date",
-        "election_type",
-        "voting_method",
-        "party_code",
-        "party_name",
-        "precinct_code",
-        "precinct_name",
-        "ncid",
-        "voted_county_code",
-        "voted_county_name",
-        "voter_tabulated_district_code",
-        "voter_tabulated_district_name"
-    ]
-
-    voter_keys = {
-        "voter_id": ["voter_reg_num"],
-        "county_code": ["county_id"],
-        "county_name": ["county_desc"],
-        "ncid": [],
-        "name_last": ["last_name"],
-        "name_first": ["first_name"],
-        "name_middle": ["middle_name"],
-        "name_suffix": ["name_suffix_lbl"],
-        "voter_status": ["status_cd"],
-        "voter_status_desc": [],
-        "voter_status_reason_code": ["reason_cd"],
-        "voter_status_reason_desc": [],
-        "residence_address": ["res_street_address"],
-        "residence_city": ["res_city_desc"],
-        "residence_state": ["state_cd"],
-        "residence_zipcode": ["zip_code"],
-        "mailing_address_line_1": ["mail_addr1"],
-        "mailing_address_line_2": ["mail_addr2"],
-        "mailing_address_line_3": ["mail_addr3"],
-        "mailing_address_line_4": ["mail_addr4"],
-        "mailing_city": ["mail_city"],
-        "mailing_state": ["mail_state"],
-        "mailing_zipcode": ["mail_zipcode"],
-        "daytime_phone": ["full_phone_number"],
-        "confidential": ["confidential_ind"],
-        "registration_date": ["registr_dt"],
-        "race_code": [],
-        "ethnic_code": [],
-        "party_code": ["party_cd"],
-        "gender_code": [],
-        "birth_year": [],
-        "age_at_year_end": [],
-        "birth_state": [],
-        "drivers_lic": [],
-        "precinct": ["precinct_abbrv"],
-        "precinct_desc": [],
-        "municipality": ["municipality_abbrv"],
-        "municipality_desc": [],
-        "ward": ["ward_abbrv"],
-        "ward_desc": [],
-        "congressional_district": ["cong_dist_abbrv"],
-        "superior_court_jurisdiction": ["super_court_abbrv"],
-        "judicial_district": ["judic_dist_abbrv"],
-        "senate_district": ["nc_senate_abbrv"],
-        "house_district": ["nc_house_abbrv"],
-        "county_commission_district": ["county_commiss_abbrv"],
-        "county_commission_district_desc": ["county_commiss_desc"],
-        "township_jurisdiction": ["township_abbrv"],
-        "township_jurisdiction_desc": ["township_desc"],
-        "school_district": ["school_dist_abbrv"],
-        "school_district_desc": ["school_dist_desc"],
-        "fire_district": ["fire_dist_abbrv"],
-        "fire_district_desc": ["fire_dist_desc"],
-        "water_district": ["water_dist_abbrv"],
-        "water_district_desc": ["water_dist_desc"],
-        "sewer_district": ["sewer_dist_abbrv"],
-        "sewer_district_desc": ["sewer_dist_desc"],
-        "sanitation_district": ["sanit_dist_abbrv"],
-        "sanitation_district_desc": ["sanit_dist_desc"],
-        "rescue_district": ["rescue_dist_abbrv"],
-        "rescue_district_desc": ["rescue_dist_desc"],
-        "municipal_district": ["munic_dist_abbrv"],
-        "municipal_district_desc": ["munic_dist_desc"],
-        "prosecutorial_district": ["dist_1_abbrv"],
-        "prosecutorial_district_desc": ["dist_1_desc"],
-        "voter_tabulated_district_code": ["vtd_abbrv"],
-        "voter_tabulated_district_name": ["vtd_desc"]
     }
 
     suppress_keys = []
@@ -177,22 +92,36 @@ class NorthCarolina(State):
             print('Caught this error: ' + repr(error))
             raise
 
-    def parse_history_into_tuple(self, history: dict) -> tuple[str | None, ...]:
+    @staticmethod
+    def parse_history_into_tuple(history: dict[str, str | None]) -> tuple[str | None, ...]:
         """
         Build a temporary dictionary from raw voter binary string
 
-        :param bytes history: A byte string containing a raw row of history data
+        :param dict history: A byte string containing a raw row of history data
         :return: A tuple of SQL ready prepared parameters
         :rtype: tuple[str | None, ...]
         """
-        history = dict(zip(self.history_keys, list(history.values())))
-        if history['voter_id'] == '':
-            history['voter_id'] = 0
+        row = {}
+        for k, v in __history_import_map__.items():
+            if k in history:
+                # handle matching keys
+                row[k] = history[k].strip()
+            else:
+                # handle non-matching keys
+                row[k] = ''
+                for match in v:
+                    if match in history:
+                        row[k] = history[match].strip()
+                        break
         for k in ["election_date"]:
-            history[k] = datetime.datetime.strptime(history[k], "%m/%d/%Y").strftime('%Y-%m-%d')
-        return tuple(history.values())
+            if len(row[k]) < 10:
+                row[k] = None
+            else:
+                row[k] = datetime.datetime.strptime(row[k], "%m/%d/%Y").strftime('%Y-%m-%d')
+        return tuple(row.values())
 
-    def parse_voter_into_tuple(self, voter: dict[str, str | None]) -> tuple[str | None, ...]:
+    @staticmethod
+    def parse_voter_into_tuple(voter: dict[str, str | None]) -> tuple[str | None, ...]:
         """
         Build a temporary dictionary from raw voter import dictionary
 
@@ -201,7 +130,7 @@ class NorthCarolina(State):
         :rtype: tuple[str | None, ...]
         """
         row = {}
-        for k, v in self.voter_keys.items():
+        for k, v in __voter_import_map__.items():
             if k in voter:
                 # handle matching keys
                 row[k] = voter[k].strip()
