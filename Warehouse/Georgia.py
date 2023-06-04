@@ -1,6 +1,6 @@
 import Warehouse.GeorgiaSQL
 from Warehouse.State import State
-from Warehouse.GeorgiaCodes import __counties__
+from Import.GeorgiaCodes import __counties__
 
 
 class Georgia(State):

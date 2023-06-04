@@ -1,16 +1,18 @@
 # -*- coding: utf-8 -*-
-import csv
+
 # Handles Raw data import methods for Georgia data
 
+import csv
 import datetime
 import io
 import zipfile
 
-import Warehouse.GeorgiaSQL
+import Warehouse.GeorgiaSQL as StateSQL
 from Import.State import State
-from Warehouse.GeorgiaCodes import __counties__
-from Warehouse.GeorgiaCodes import __election_types__
-from Warehouse.GeorgiaCodes import __parties__
+from Import.GeorgiaCodes import __counties__
+from Import.GeorgiaCodes import __election_types__
+from Import.GeorgiaCodes import __parties__
+from Import.GeorgiaCodes import __history_import_map__
 
 
 class Georgia(State):
@@ -28,24 +30,6 @@ class Georgia(State):
             "parse": "parse_history_into_tuple"
         }
     }
-
-    history_keys = [
-        "county_code",
-        "voter_id",
-        "election_date",
-        "election_type",
-        "party",
-        "ballot_style",
-        "absentee",
-        "provisional",
-        "supplemental"
-    ]
-
-    @property
-    def voter_keys(self):
-        pass
-
-    suppress_keys = []
 
     def import_source(self, file: str, t: str) -> None:
         """
@@ -80,7 +64,7 @@ class Georgia(State):
                                 else:
                                     print(f"Importing batch of {len(data)} records from {info.filename}..")
                                     self.db.executemany_prepared_sql(
-                                        getattr(Warehouse.GeorgiaSQL, self.valid_import_types[t]["sql"])(),
+                                        getattr(StateSQL, self.valid_import_types[t]["sql"])(),
                                         data
                                     )
                                     records_imported += len(data)
@@ -91,7 +75,7 @@ class Georgia(State):
                             if t in self.valid_import_types.keys():
                                 print(f"Importing batch of {len(data)} records from {info.filename}..")
                                 self.db.executemany_prepared_sql(
-                                    getattr(Warehouse.GeorgiaSQL, self.valid_import_types[t]["sql"])(),
+                                    getattr(StateSQL, self.valid_import_types[t]["sql"])(),
                                     data
                                 )
                                 records_imported += len(data)
@@ -151,7 +135,23 @@ class Georgia(State):
                 list(__counties__.values()).index('UNKNOWN')
             ]
 
-    def parse_history_into_tuple(self, history: dict) -> tuple[str | None, ...]:
+    @staticmethod
+    def get_election_type(name: str) -> str:
+        """
+        Convert a county name to its code
+
+        :param str name: The long name for election tpe
+        :return: The election type code
+        :rtype str
+        """
+        if name == '':
+            name = "UNKNOWN"
+        return list(__election_types__.keys())[
+            list(__election_types__.values()).index(name)
+        ]
+
+    @staticmethod
+    def parse_history_into_tuple(history: dict) -> tuple[str | None, ...]:
         """
         Build a temporary dictionary from raw voter binary string
 
@@ -159,22 +159,31 @@ class Georgia(State):
         :return: A tuple of SQL ready prepared parameters
         :rtype: tuple[str | None, ...]
         """
-        history = dict(zip(self.history_keys, list(history.values())))
-        history['county_code'] = Georgia.get_county_code(history['county_code'])
-        history['party'] = Georgia.get_party_code(history['party'])
-
-        if history['election_type'] == '':
-            history['election_type'] = "UNKNOWN"
-        history['election_type'] = list(__election_types__.keys())[
-            list(__election_types__.values()).index(history['election_type'])
-        ]
-        if history['voter_id'] == '':
-            history['voter_id'] = 0
-        for k in ["election_date"]:
-            history[k] = datetime.datetime.strptime(history[k], "%m/%d/%Y").strftime('%Y-%m-%d')
-        for k in ["absentee", "provisional", "supplemental"]:
-            if history[k].upper() == 'Y':
-                history[k] = 1
+        row = {}
+        for k, v in __history_import_map__.items():
+            if k in history:
+                # handle matching keys
+                row[k] = history[k].strip()
             else:
-                history[k] = 0
-        return tuple(history.values())
+                # handle non-matching keys
+                row[k] = ''
+                for match in v:
+                    if match in history:
+                        row[k] = history[match].strip()
+                        break
+        for k in ["election_date"]:
+            if len(row[k]) < 10:
+                row[k] = None
+            else:
+                row[k] = datetime.datetime.strptime(row[k], "%m/%d/%Y").strftime('%Y-%m-%d')
+        for k in ["absentee", "provisional", "supplemental"]:
+            if row[k].upper() == 'Y':
+                row[k] = 1
+            else:
+                row[k] = 0
+        row['county_code'] = Georgia.get_county_code(row['county_code'])
+        row['party'] = Georgia.get_party_code(row['party'])
+        row['election_type'] = Georgia.get_election_type(row['election_type'])
+        if row['voter_id'] == '':
+            row['voter_id'] = 0
+        return tuple(row.values())

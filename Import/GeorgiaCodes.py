@@ -1,3 +1,18 @@
+# -*- coding: utf-8 -*-
+
+__history_import_map__ = {
+    "county_code": ["County Name"],
+    "voter_id": ["Voter Registration Number"],
+    "election_date": ["Election Date"],
+    "election_type": ["Election Type"],
+    "party": ["Party"],
+    "ballot_style": ["Ballot Style"],
+    "absentee": ["Absentee"],
+    "provisional": ["Provisional"],
+    "supplemental": ["Supplemental"]
+}
+
+
 __parties__ = {
     "D": "Democratic",
     "R": "Republican",

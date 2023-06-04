@@ -1,15 +1,15 @@
 # -*- coding: utf-8 -*-
 
-import csv
 # Handles Raw data import methods for North Carolina data
 
+import csv
 import datetime
 import io
 import zipfile
 
-import Warehouse.NorthCarolinaSQL
-from Warehouse.NorthCarolinaCodes import __history_import_map__
-from Warehouse.NorthCarolinaCodes import __voter_import_map__
+import Warehouse.NorthCarolinaSQL as StateSQL
+from Import.NorthCarolinaCodes import __history_import_map__
+from Import.NorthCarolinaCodes import __voter_import_map__
 from Import.State import State
 
 
@@ -28,8 +28,6 @@ class NorthCarolina(State):
             "parse": "parse_history_into_tuple"
         }
     }
-
-    suppress_keys = []
 
     def import_source(self, file: str, t: str) -> None:
         """
@@ -69,7 +67,7 @@ class NorthCarolina(State):
                                 else:
                                     print(f"Importing batch of {len(data)} records from {info.filename}..")
                                     self.db.executemany_prepared_sql(
-                                        getattr(Warehouse.NorthCarolinaSQL, self.valid_import_types[t]["sql"])(),
+                                        getattr(StateSQL, self.valid_import_types[t]["sql"])(),
                                         data
                                     )
                                     records_imported += len(data)
@@ -80,7 +78,7 @@ class NorthCarolina(State):
                             if t in self.valid_import_types.keys():
                                 print(f"Importing batch of {len(data)} records from {info.filename}..")
                                 self.db.executemany_prepared_sql(
-                                    getattr(Warehouse.NorthCarolinaSQL, self.valid_import_types[t]["sql"])(),
+                                    getattr(StateSQL, self.valid_import_types[t]["sql"])(),
                                     data
                                 )
                                 records_imported += len(data)

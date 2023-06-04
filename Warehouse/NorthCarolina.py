@@ -2,7 +2,7 @@
 
 import Warehouse.NorthCarolinaSQL
 from Warehouse.State import State
-from Warehouse.NorthCarolinaCodes import __counties__
+from Import.NorthCarolinaCodes import __counties__
 
 
 class NorthCarolina(State):
