@@ -38,7 +38,11 @@ steps:
   - bash: |
       eval $(ssh-agent); ssh-add <(echo "${SSH_KEY}" | base64 -d);
       echo -n "${VAULT_KEY}" | base64 -d > $(Agent.TempDirectory)/.vault
-    displayName: Setup SSH Agent and Ansible Vault
+    workingDirectory: $(Build.SourcesDirectory)/pipeline
+    displayName: Connect to host and setup Azure DevOps agent with Podman
+    env:
+      SSH_KEY: $(default_ssh_key)
+      VAULT_KEY: $(ansible_vault_key)
 
   - script: echo Hello, world!
     displayName: 'Run a one-line script'
