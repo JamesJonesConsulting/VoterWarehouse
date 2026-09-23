@@ -39,8 +39,11 @@ steps:
   - bash: |
       eval $(ssh-agent); ssh-add <(echo "${SSH_KEY}" | base64 -d);
       echo -n "${VAULT_KEY}" | base64 -d > $(Agent.TempDirectory)/.vault
+      python3 -m pip config unset global.index-url
       python3 -m pip config set global.index-url https://${ARTIFACTORY_HOST}/repository/pypi-all/simple/
+      python3 -m pip config unset global.index
       python3 -m pip config set global.index https://${ARTIFACTORY_HOST}/repository/pypi-all/
+      python3 -m pip config unset global.trusted-host
       python3 -m pip config set global.trusted-host ${ARTIFACTORY_HOST}
     workingDirectory: $(Build.SourcesDirectory)/pipeline
     displayName: Connect to host and setup Azure DevOps agent with Podman
