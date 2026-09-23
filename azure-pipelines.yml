@@ -60,3 +60,5 @@ steps:
       python3 -m pip install -r requirements.txt
 
       python3 build.py
+    workingDirectory: $(Build.SourcesDirectory)/pipeline
+    displayName: Build Python Package
