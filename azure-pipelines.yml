@@ -24,12 +24,26 @@ resources:
 
 pool: FedoraHosted
 container: podman-dind
+variables:
+  - group: Connections
 
 steps:
-- script: echo Hello, world!
-  displayName: 'Run a one-line script'
+  - checkout: self 
+    path: s/pipeline
+  - checkout: inventory
+    path: s/inventory
+  - checkout: vault
+    path: s/vault
 
-- script: |
-    echo Add other tasks to build, test, and deploy your project.
-    echo See https://aka.ms/yaml
-  displayName: 'Run a multi-line script'
+  - bash: |
+      eval $(ssh-agent); ssh-add <(echo "${SSH_KEY}" | base64 -d);
+      echo -n "${VAULT_KEY}" | base64 -d > $(Agent.TempDirectory)/.vault
+    displayName: Setup SSH Agent and Ansible Vault
+
+  - script: echo Hello, world!
+    displayName: 'Run a one-line script'
+
+  - script: |
+      echo Add other tasks to build, test, and deploy your project.
+      echo See https://aka.ms/yaml
+    displayName: 'Run a multi-line script'
