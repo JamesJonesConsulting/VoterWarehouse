@@ -23,6 +23,7 @@ resources:
       options: --userns=keep-id --privileged --user root
 
 pool: FedoraHosted
+container: podman-dind
 
 steps:
 - script: echo Hello, world!
