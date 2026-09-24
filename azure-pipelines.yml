@@ -4,7 +4,17 @@
 # https://aka.ms/yaml
 
 trigger:
-- main
+  branches:
+    include:
+      - feature/*
+      - release/*
+  tags:
+    include:
+      - '*'
+pr:
+  branches:
+    include:
+      - develop
 
 resources:
   repositories:
