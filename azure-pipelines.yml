@@ -72,7 +72,7 @@ steps:
         VERSION+=$(git symbolic-ref --short HEAD | sed 's|/|-|g')
       fi
 
-      fpm -s dir -t rpm -n voterwarehouse -v ${VERSION} --iteration $(Build.BuildId) \
+      fpm -s dir -t rpm -n voterwarehouse -v ${VERSION} --iteration $(Build.BuildNumber) \
         --description "VoterWarehouse: Imports and Extracts Voter and History data" \
         --url "https://github.com/jamjon3/VoterWarehouse" \
         --license "LGPL3.0" --vendor "James Jones" \
