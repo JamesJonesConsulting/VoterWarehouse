@@ -132,12 +132,11 @@ steps:
   - bash: |
       set -euo pipefail
 
-      nexus_url="https://$(nexus_host)"
       repository="yum-hosted-arch/main/x86_64"
       rpm_path="$(rpmPath)"
       rpm_name="$(rpmName)"
 
-      upload_url="${nexus_url}/repository/${repository}/${rpm_name}"
+      upload_url="https://$(nexus_host)/repository/${repository}/${rpm_name}"
 
       echo "Uploading ${rpm_name} to ${repository}..."
       echo "${NEXUS_USERNAME}"
