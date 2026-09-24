@@ -26,7 +26,7 @@ setup(
     install_requires=[
         "PyMySQL==1.1.1",
         "PyYAML==6.0",
-        "sphinx==7.0.1",
+        "sphinx==7.2.5",
         "nose==1.3.7",
         "pyinstaller==6.0.0"
     ]
