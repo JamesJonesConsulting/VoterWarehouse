@@ -1,6 +1,6 @@
 ARG ARTIFACTORY
 ARG PYTHON_VERSION
-FROM ${ARTIFACTORY}/ymdllc/rhel7-python/${PYTHON_VERSION}:latest
+FROM ${ARTIFACTORY}/ymdllc/containers/centos7-python/${PYTHON_VERSION}:latest
 
 WORKDIR /work
 

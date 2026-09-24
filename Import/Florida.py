@@ -138,10 +138,14 @@ class Florida(State):
                             )
                             for row in reader:
                                 if len(data) < self.db.batch_limits[t]:
-                                    data.append(getattr(self, self.valid_import_types[t]["parse"])(
-                                        row,
-                                        datetime.datetime(*info.date_time).strftime("%Y-%m-%d")
-                                    ))
+                                    try:
+                                        data.append(getattr(self, self.valid_import_types[t]["parse"])(
+                                            row,
+                                            datetime.datetime(*info.date_time).strftime("%Y-%m-%d")
+                                        ))
+                                    except TypeError as te:
+                                        print('Caught this error: ' + repr(te))
+                                        continue
                                 else:
                                     print(f"Importing batch of {len(data)} records from {info.filename}..")
                                     self.db.executemany_prepared_sql(
