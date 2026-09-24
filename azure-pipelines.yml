@@ -140,7 +140,7 @@ steps:
       upload_url="${nexus_url}/repository/${repository}/${rpm_name}"
 
       echo "Uploading ${rpm_name} to ${repository}..."
-
+      echo "${NEXUS_USERNAME}"
       curl \
         --fail \
         --silent \
