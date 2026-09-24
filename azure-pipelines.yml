@@ -44,14 +44,6 @@ steps:
     env:
       SSH_KEY: $(default_ssh_key)
       VAULT_KEY: $(ansible_vault_key)
-
-  - script: echo Hello, world!
-    displayName: 'Run a one-line script'
-
-  - script: |
-      echo Add other tasks to build, test, and deploy your project.
-      echo See https://aka.ms/yaml
-    displayName: 'Run a multi-line script'
   - bash: |
       python3 -m venv venv
       source venv/bin/activate
@@ -97,6 +89,7 @@ steps:
         echo "##vso[task.setvariable variable=gitRefName]$refName"
       fi
     displayName: Get version and normalized tag or branch name
+    workingDirectory: $(Build.SourcesDirectory)/pipeline
   - bash: |
       echo "Reference type: $(gitRefType)"
       echo "Reference name: $(gitRefName)"
@@ -109,3 +102,4 @@ steps:
         ./dist/voterwarehouse=/usr/bin/voterwarehouse \
         ./config.sample.yml=/etc/VoterWarehouse/config.yml
     displayName: Build the RPM package
+    workingDirectory: $(Build.SourcesDirectory)/pipeline
