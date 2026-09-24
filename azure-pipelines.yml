@@ -71,8 +71,36 @@ steps:
         VERSION+="~"
         VERSION+=$(git symbolic-ref --short HEAD | sed 's|/|-|g')
       fi
-      echo "$VERSION"
-      fpm -s dir -t rpm -n voterwarehouse -v ${VERSION} --iteration $(Build.BuildNumber) \
+    workingDirectory: $(Build.SourcesDirectory)/pipeline
+    displayName: Build Python Package
+  - bash: |
+      if [[ "$BUILD_SOURCEBRANCH" == refs/tags/* ]]; then
+        tag="${BUILD_SOURCEBRANCH#refs/tags/}"
+
+        echo "Tag: $tag"
+        echo "##vso[task.setvariable variable=gitRefType]tag"
+        echo "##vso[task.setvariable variable=gitRefName]$tag"
+      else
+        branch="${BUILD_SOURCEBRANCH#refs/heads/}"
+
+        # Replace "/" with "-"
+        branch="${branch//\//-}"
+
+        # Get the application version
+        version="$(dist/voterwarehouse -v)"
+
+        # Prepend the version and "~" to the branch name
+        refName="${version}~${branch}"
+
+        echo "Branch: $refName"
+        echo "##vso[task.setvariable variable=gitRefType]branch"
+        echo "##vso[task.setvariable variable=gitRefName]$refName"
+      fi
+    displayName: Get version and normalized tag or branch name
+  - bash: |
+      echo "Reference type: $(gitRefType)"
+      echo "Reference name: $(gitRefName)"
+      fpm -s dir -t rpm -n voterwarehouse -v $(gitRefName) --iteration $(Build.BuildNumber) \
         --description "VoterWarehouse: Imports and Extracts Voter and History data" \
         --url "https://github.com/jamjon3/VoterWarehouse" \
         --license "LGPL3.0" --vendor "James Jones" \
@@ -80,6 +108,4 @@ steps:
         -p ./dist \
         ./dist/voterwarehouse=/usr/bin/voterwarehouse \
         ./config.sample.yml=/etc/VoterWarehouse/config.yml
-
-    workingDirectory: $(Build.SourcesDirectory)/pipeline
-    displayName: Build Python Package
+    displayName: Build the RPM package
