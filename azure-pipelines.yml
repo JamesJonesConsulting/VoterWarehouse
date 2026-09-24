@@ -125,11 +125,6 @@ steps:
     workingDirectory: $(Build.SourcesDirectory)/pipeline
 
   - bash: |
-      echo "RPM path: $(rpmPath)"
-      echo "RPM name: $(rpmName)"
-    displayName: Use RPM path
-
-  - bash: |
       set -euo pipefail
 
       repository="yum-hosted-arch/main/x86_64"
