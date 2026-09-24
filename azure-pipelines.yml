@@ -1,0 +1,85 @@
+# Starter pipeline
+# Start with a minimal pipeline that you can customize to build and deploy your code.
+# Add steps that build, run tests, deploy, and more:
+# https://aka.ms/yaml
+
+trigger:
+- main
+
+resources:
+  repositories:
+    - repository: inventory
+      type: github
+      name: JamesJonesConsulting/AnsibleInventory
+      endpoint: JamesJonesConsulting      
+    - repository: vault
+      type: github
+      name: JamesJonesConsulting/AnsibleVault
+      endpoint: JamesJonesConsulting      
+  containers: 
+    - container: podman-dind
+      image: nexus.jamesjonesconsulting.com:5443/jamesjonesconsulting/podman-dind-like:latest
+      endpoint: JamesJonesConsultingDockerNexusHosted
+      options: --userns=keep-id --privileged --user root
+pool: FedoraHosted
+container: podman-dind
+variables:
+  - group: Connections
+  - name: ARTIFACTORY_HOST
+    value: nexus.jamesjonesconsulting.com
+
+steps:
+  - checkout: self 
+    path: s/pipeline
+  - checkout: inventory
+    path: s/inventory
+  - checkout: vault
+    path: s/vault
+
+  - bash: |
+      eval $(ssh-agent); ssh-add <(echo "${SSH_KEY}" | base64 -d);
+      echo -n "${VAULT_KEY}" | base64 -d > $(Agent.TempDirectory)/.vault
+    workingDirectory: $(Build.SourcesDirectory)/pipeline
+    displayName: Connect to host and setup Azure DevOps agent with Podman
+    env:
+      SSH_KEY: $(default_ssh_key)
+      VAULT_KEY: $(ansible_vault_key)
+
+  - script: echo Hello, world!
+    displayName: 'Run a one-line script'
+
+  - script: |
+      echo Add other tasks to build, test, and deploy your project.
+      echo See https://aka.ms/yaml
+    displayName: 'Run a multi-line script'
+  - bash: |
+      python3 -m venv venv
+      source venv/bin/activate
+      python3 -m pip install --upgrade pip setuptools wheel "cython<3.0.0"
+
+      python3 -m pip install .
+
+      python3 build.py
+
+      # Branch detection
+      GITREF=$(git symbolic-ref HEAD)
+
+      if [[ "$GITREF" =~ ^refs/tags.* ]]; then
+        VERSION=$(git symbolic-ref --short HEAD)
+      else
+        VERSION=$(dist/voterwarehouse -v)
+        VERSION+="~"
+        VERSION+=$(git symbolic-ref --short HEAD | sed 's|/|-|g')
+      fi
+
+      fpm -s dir -t rpm -n voterwarehouse -v ${VERSION} --iteration $(Build.BuildId) \
+        --description "VoterWarehouse: Imports and Extracts Voter and History data" \
+        --url "https://github.com/jamjon3/VoterWarehouse" \
+        --license "LGPL3.0" --vendor "James Jones" \
+        --config-files /etc/VoterWarehouse/config.yml \
+        -p ./dist \
+        ./dist/voterwarehouse=/usr/bin/voterwarehouse \
+        ./config.sample.yml=/etc/VoterWarehouse/config.yml
+
+    workingDirectory: $(Build.SourcesDirectory)/pipeline
+    displayName: Build Python Package
