@@ -28,6 +28,6 @@ setup(
         "PyYAML==6.0.1",
         "sphinx==7.2.5",
         "nose==1.3.7",
-        "pyinstaller==6.0.0"
+        "pyinstaller==6.10.0"
     ]
 )
