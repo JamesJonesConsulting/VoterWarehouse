@@ -26,11 +26,7 @@ resources:
       type: github
       name: JamesJonesConsulting/AnsibleVault
       endpoint: JamesJonesConsulting
-    - repository: voterimport-api
-      type: git
-      endpoint: gitlab_home
-      name: ymdllc/java-development/springboot/voterimport-api
-  containers: 
+  containers:
     - container: podman-dind
       image: nexus.jamesjonesconsulting.com:5443/jamesjonesconsulting/podman-dind-like:latest
       endpoint: JamesJonesConsultingDockerNexusHosted
