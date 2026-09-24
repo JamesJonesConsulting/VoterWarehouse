@@ -128,3 +128,31 @@ steps:
       echo "RPM path: $(rpmPath)"
       echo "RPM name: $(rpmName)"
     displayName: Use RPM path
+
+  - bash: |
+      set -euo pipefail
+
+      nexus_url="https://$(nexus_host)"
+      repository="yum-hosted-arch/main/x86_64"
+      rpm_path="$(rpmPath)"
+      rpm_name="$(rpmName)"
+
+      upload_url="${nexus_url}/repository/${repository}/${rpm_name}"
+
+      echo "Uploading ${rpm_name} to ${repository}..."
+
+      curl \
+        --fail \
+        --silent \
+        --show-error \
+        --location \
+        --user "${NEXUS_USERNAME}:${NEXUS_PASSWORD}" \
+        --upload-file "$rpm_path" \
+        "$upload_url"
+
+      echo "Successfully uploaded ${rpm_name}"
+    displayName: Publish RPM to Nexus
+    workingDirectory: $(Build.SourcesDirectory)/pipeline
+    env:
+      NEXUS_USERNAME: $(nexus_publish_user)
+      NEXUS_PASSWORD: $(nexus_publish_pass)
