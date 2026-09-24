@@ -71,7 +71,7 @@ steps:
         VERSION+="~"
         VERSION+=$(git symbolic-ref --short HEAD | sed 's|/|-|g')
       fi
-
+      echo "$VERSION"
       fpm -s dir -t rpm -n voterwarehouse -v ${VERSION} --iteration $(Build.BuildNumber) \
         --description "VoterWarehouse: Imports and Extracts Voter and History data" \
         --url "https://github.com/jamjon3/VoterWarehouse" \
