@@ -132,7 +132,7 @@ steps:
   - bash: |
       set -euo pipefail
 
-      nexus_url="https://${ARTIFACTORY_HOST}"
+      nexus_url="https://$(nexus_host)"
       repository="yum-hosted-arch/main/x86_64"
       rpm_path="$(rpmPath)"
       rpm_name="$(rpmName)"
