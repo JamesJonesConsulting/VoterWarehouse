@@ -44,14 +44,6 @@ steps:
     env:
       SSH_KEY: $(default_ssh_key)
       VAULT_KEY: $(ansible_vault_key)
-
-  - script: echo Hello, world!
-    displayName: 'Run a one-line script'
-
-  - script: |
-      echo Add other tasks to build, test, and deploy your project.
-      echo See https://aka.ms/yaml
-    displayName: 'Run a multi-line script'
   - bash: |
       python3 -m venv venv
       source venv/bin/activate
@@ -60,19 +52,37 @@ steps:
       python3 -m pip install .
 
       python3 build.py
+    workingDirectory: $(Build.SourcesDirectory)/pipeline
+    displayName: Build Python Package
+  - bash: |
+      if [[ "$BUILD_SOURCEBRANCH" == refs/tags/* ]]; then
+        tag="${BUILD_SOURCEBRANCH#refs/tags/}"
 
-      # Branch detection
-      GITREF=$(git symbolic-ref HEAD)
-
-      if [[ "$GITREF" =~ ^refs/tags.* ]]; then
-        VERSION=$(git symbolic-ref --short HEAD)
+        echo "Tag: $tag"
+        echo "##vso[task.setvariable variable=gitRefType]tag"
+        echo "##vso[task.setvariable variable=gitRefName]$tag"
       else
-        VERSION=$(dist/voterwarehouse -v)
-        VERSION+="~"
-        VERSION+=$(git symbolic-ref --short HEAD | sed 's|/|-|g')
-      fi
+        branch="${BUILD_SOURCEBRANCH#refs/heads/}"
 
-      fpm -s dir -t rpm -n voterwarehouse -v ${VERSION} --iteration $(Build.BuildId) \
+        # Replace "/" with "-"
+        branch="${branch//\//-}"
+
+        # Get the application version
+        version="$(dist/voterwarehouse -v)"
+
+        # Prepend the version and "~" to the branch name
+        refName="${version}~${branch}"
+
+        echo "Branch: $refName"
+        echo "##vso[task.setvariable variable=gitRefType]branch"
+        echo "##vso[task.setvariable variable=gitRefName]$refName"
+      fi
+    displayName: Get version and normalized tag or branch name
+    workingDirectory: $(Build.SourcesDirectory)/pipeline
+  - bash: |
+      echo "Reference type: $(gitRefType)"
+      echo "Reference name: $(gitRefName)"
+      fpm -s dir -t rpm -n voterwarehouse -v $(gitRefName) --iteration $(Build.BuildNumber) \
         --description "VoterWarehouse: Imports and Extracts Voter and History data" \
         --url "https://github.com/jamjon3/VoterWarehouse" \
         --license "LGPL3.0" --vendor "James Jones" \
@@ -80,6 +90,52 @@ steps:
         -p ./dist \
         ./dist/voterwarehouse=/usr/bin/voterwarehouse \
         ./config.sample.yml=/etc/VoterWarehouse/config.yml
-
+    displayName: Build the RPM package
     workingDirectory: $(Build.SourcesDirectory)/pipeline
-    displayName: Build Python Package
+  - bash: |
+      set -euo pipefail
+
+      rpm_path="$(find ./dist -maxdepth 1 -type f -name '*.rpm' -print -quit)"
+
+      if [[ -z "$rpm_path" ]]; then
+        echo "No RPM file found in ./dist" >&2
+        exit 1
+      fi
+
+      rpm_name="$(basename "$rpm_path")"
+
+      echo "RPM path: $rpm_path"
+      echo "RPM name: $rpm_name"
+
+      # Make the path available to later Azure DevOps tasks
+      echo "##vso[task.setvariable variable=rpmPath]$rpm_path"
+      echo "##vso[task.setvariable variable=rpmName]$rpm_name"
+    displayName: Find produced RPM
+    workingDirectory: $(Build.SourcesDirectory)/pipeline
+
+  - bash: |
+      set -euo pipefail
+
+      repository="yum-hosted-arch/main/x86_64"
+      rpm_path="$(rpmPath)"
+      rpm_name="$(rpmName)"
+
+      upload_url="https://$(nexus_host)/repository/${repository}/${rpm_name}"
+
+      echo "Uploading ${rpm_name} to ${repository}..."
+      echo "${NEXUS_USERNAME}"
+      curl \
+        --fail \
+        --silent \
+        --show-error \
+        --location \
+        --user "${NEXUS_USERNAME}:${NEXUS_PASSWORD}" \
+        --upload-file "$rpm_path" \
+        "$upload_url"
+
+      echo "Successfully uploaded ${rpm_name}"
+    displayName: Publish RPM to Nexus
+    workingDirectory: $(Build.SourcesDirectory)/pipeline
+    env:
+      NEXUS_USERNAME: $(nexus_publish_user)
+      NEXUS_PASSWORD: $(nexus_publish_pass)

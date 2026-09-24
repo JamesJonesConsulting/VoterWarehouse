@@ -13,6 +13,7 @@ from Import.GeorgiaCodes import __counties__
 from Import.GeorgiaCodes import __election_types__
 from Import.GeorgiaCodes import __parties__
 from Import.GeorgiaCodes import __history_import_map__
+from Import.GeorgiaCodes import __voter_import_map__
 
 
 class Georgia(State):
@@ -23,11 +24,13 @@ class Georgia(State):
     valid_import_types = {
         "voters": {
             "sql": "set_voter",
-            "parse": "parse_raw_voter_into_tuple"
+            "parse": "parse_raw_voter_into_tuple",
+            "reader": io.BufferedReader
         },
         "histories": {
             "sql": "set_history",
-            "parse": "parse_history_into_tuple"
+            "parse": "parse_history_into_tuple",
+            "reader": csv.DictReader
         }
     }
 
@@ -51,11 +54,13 @@ class Georgia(State):
                     data = []
                     records_imported = 0
                     with archive.open(info.filename, "r") as f:
-                        reader = csv.DictReader(
-                            io.TextIOWrapper(f, newline='')
-                        )
-                        for row in reader:
-                            if t in self.valid_import_types.keys():
+                        if t in self.valid_import_types.keys():
+                            reader = self.valid_import_types[t]["reader"](
+                                io.TextIOWrapper(f, newline='')
+                            )
+                            for row in reader:
+                                if isinstance(reader, io.BufferedReader):
+                                    pandas.read_fwf()
                                 if len(data) < self.db.batch_limits[t]:
                                     data.append(getattr(self, self.valid_import_types[t]["parse"])(
                                         row
@@ -69,20 +74,20 @@ class Georgia(State):
                                     )
                                     records_imported += len(data)
                                     data = []
-                            else:
-                                raise ValueError(f"Usage: Type 't' {t} is not valid")
-                        if len(data) > 0:
-                            if t in self.valid_import_types.keys():
-                                print(f"Importing batch of {len(data)} records from {info.filename}..")
-                                self.db.executemany_prepared_sql(
-                                    getattr(StateSQL, self.valid_import_types[t]["sql"])(),
-                                    data
-                                )
-                                records_imported += len(data)
-                            else:
-                                raise ValueError(f"Usage: Type 't' {t} is not valid")
-                        print(f"{records_imported} total records imported")
-                        print("-" * 20)
+                            if len(data) > 0:
+                                if t in self.valid_import_types.keys():
+                                    print(f"Importing batch of {len(data)} records from {info.filename}..")
+                                    self.db.executemany_prepared_sql(
+                                        getattr(StateSQL, self.valid_import_types[t]["sql"])(),
+                                        data
+                                    )
+                                    records_imported += len(data)
+                                else:
+                                    raise ValueError(f"Usage: Type 't' {t} is not valid")
+                            print(f"{records_imported} total records imported")
+                            print("-" * 20)
+                        else:
+                            raise ValueError(f"Usage: Type 't' {t} is not valid")
         except Exception as error:
             print('Caught this error: ' + repr(error))
             raise

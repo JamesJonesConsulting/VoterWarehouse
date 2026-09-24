@@ -1,4 +1,4 @@
-FROM nexus.jamesjonesconsulting.com:5443/ymdllc/rhel7-python/3.11.3:latest
+FROM nexus.jamesjonesconsulting.com:5443/ymdllc/containers/centos7-python:latest/3.11.3:latest
 
 RUN source scl_source enable rh-ruby26 && \
     gem install ffi && \

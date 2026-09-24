@@ -1,17 +1,117 @@
 # -*- coding: utf-8 -*-
+import csv
+import io
+
 
 __history_import_map__ = {
-    "county_code": ["County Name"],
-    "voter_id": ["Voter Registration Number"],
-    "election_date": ["Election Date"],
-    "election_type": ["Election Type"],
-    "party": ["Party"],
-    "ballot_style": ["Ballot Style"],
-    "absentee": ["Absentee"],
-    "provisional": ["Provisional"],
-    "supplemental": ["Supplemental"]
+    "09-02-1997": {
+        "reader": io.BufferedReader,
+        "fields": {
+            "county_code": (0, 2),
+            "voter_id": (3, 10),
+            "old_county_voter_id": (11, 24),
+            "election_date": (25, 32),
+            "election_type": (33, 35),
+            "party": (36, 36),
+            "absentee": (37, 37)
+        }
+    },
+    "01-02-2023": {
+        "reader": csv.DictReader,
+        "fields": {
+            "county_code": ["County Name"],
+            "voter_id": ["Voter Registration Number"],
+            "election_date": ["Election Date"],
+            "election_type": ["Election Type"],
+            "party": ["Party"],
+            "ballot_style": ["Ballot Style"],
+            "absentee": ["Absentee"],
+            "provisional": ["Provisional"],
+            "supplemental": ["Supplemental"]
+        }
+    },
 }
-
+__voter_import_map__ = {
+    "09-02-1997": {
+        "reader": io.BufferedReader,
+        "fields": {
+            "county_code": (0, 2),
+            "voter_id": (3, 10),
+            "voter_status": (11, 11),
+            "name_last": (12, 31),
+            "name_first": (32, 51),
+            "name_middle": (52, 71),
+            "name_suffix": (72, 74),
+            "name_title": (75, 77),
+            "residence_street_number": (78, 83),
+            "residence_street_name": (84, 113),
+            "residence_street_suffix": (114, 115),
+            "residence_apartment_unit": (116, 123),
+            "residence_city": (124, 140),
+            "residence_zipcode": (141, 145),
+            "residence_zipcode_suffix": (146, 149),
+            "filler_1": (150, 151),
+            "filler_2": (152, 160),
+            "birth_date": (161, 168),
+            "registration_date": (169, 176),
+            "race": (177, 177),
+            "gender": (178, 178),
+            "absentee": (179, 179),
+            "land_district": (180, 182),
+            "land_lot": (183, 186),
+            "old_county_registration_date": (187, 194),
+            "old_county_voter_id": (195, 208),
+            "county_precinct_id": (209, 213),
+            "city_precinct_id": (214, 218),
+            "congressional_district": (219, 221),
+            "senate_district": (222, 224),
+            "house_district": (225, 227),
+            "judicial_district": (228, 230),
+            "county_commission_district": (231, 233),
+            "school_district": (234, 236),
+            "county_district_a_name": (237, 249),
+            "county_district_a_value": (250, 252),
+            "county_district_b_name": (253, 265),
+            "county_district_b_value": (266, 268),
+            "municipal_name": (269, 287),
+            "municipal_code": (286, 288),
+            "ward_city_council_name": (289, 301),
+            "ward_city_council_value": (302, 304),
+            "city_school_district_name": (305, 317),
+            "city_school_district_value": (318, 320),
+            "city_district_a_name": (321, 333),
+            "city_district_a_value": (334, 336),
+            "city_district_b_name": (337, 349),
+            "city_district_b_value": (350, 352),
+            "city_district_c_name": (353, 365),
+            "city_district_c_value": (366, 368),
+            "city_district_d_name": (369, 381),
+            "city_district_d_value": (382, 384),
+            "last_voted_date": (385, 392),
+            "last_voted_election_type": (393, 395),
+            "last_voted_party": (396, 396),
+            "last_contact_date": (397, 404),
+            "mail_street_number": (405, 410),
+            "mail_street_name": (411, 440),
+            "mail_street_suffix": (441, 442),
+            "mail_apartment_unit": (443, 450),
+            "mail_city": (451, 467),
+            "mail_state": (468, 469),
+            "mail_zipcode": (470, 474),
+            "mail_zipcode_suffix": (475, 478),
+            "filler_3": (479, 480),
+            "mail_address_2": (481, 510),
+            "mail_address_3": (511, 540),
+            "mail_country": (541, 560),
+            "date_added": (561, 568),
+            "date_changed": (569, 576),
+            "district_combo": (577, 579),
+            "residential_building_designation": (580, 582),
+            "mail_rural_route_or_po_box": (583, 590),
+            "combined_street_address": (591, 650)
+        }
+    }
+}
 
 __parties__ = {
     "D": "Democratic",
@@ -199,3 +299,5 @@ __counties__ = {
     "159": "WORTH",
     "999": "UNKNOWN"
 }
+
+import io
