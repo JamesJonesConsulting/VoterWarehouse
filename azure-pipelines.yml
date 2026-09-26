@@ -44,6 +44,13 @@ steps:
     env:
       SSH_KEY: $(default_ssh_key)
       VAULT_KEY: $(ansible_vault_key)
+  - task: SonarQubePrepare@8
+    inputs:
+      SonarQube: 'SonarQube Home'
+      scannerMode: 'cli'
+      cliScannerVersion: '8.1.0.6389'
+      configMode: 'file'
+      cliSources: $(Build.SourcesDirectory)/pipeline
   - bash: |
       python3 -m venv venv
       source venv/bin/activate
@@ -54,6 +61,13 @@ steps:
       python3 build.py
     workingDirectory: $(Build.SourcesDirectory)/pipeline
     displayName: Build Python Package
+  - task: SonarQubeAnalyze@8
+    inputs:
+      jdkversion: 'JAVA_HOME_17_X64'
+  # Publish Quality Gate Result task
+  - task: SonarQubePublish@8
+    inputs:
+      pollingTimeoutSec: '300'
   - bash: |
       if [[ "$BUILD_SOURCEBRANCH" == refs/tags/* ]]; then
         tag="${BUILD_SOURCEBRANCH#refs/tags/}"
