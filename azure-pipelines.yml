@@ -63,9 +63,9 @@ steps:
     displayName: Build Python Package
   - bash: |
       curl -s "https://get.sdkman.io" | bash
-      bash -c "source $HOME/.sdkman/bin/sdkman-init.sh"
+      bash -c "source ~/.sdkman/bin/sdkman-init.sh"
       yes | sdk install java $JAVA_VERSION
-      JAVA_HOME="$(Build.SourcesDirectory)/pipeline/.sdkman/candidates/java/current"
+      JAVA_HOME=~/.sdkman/candidates/java/current"
       echo "##vso[task.setvariable variable=javaHome]$JAVA_HOME"
     displayName: Install Java with SDKMAN
     workingDirectory: $(Build.SourcesDirectory)/pipeline
