@@ -61,9 +61,21 @@ steps:
       python3 build.py
     workingDirectory: $(Build.SourcesDirectory)/pipeline
     displayName: Build Python Package
+  - bash: |
+      curl -s "https://get.sdkman.io" | bash
+      bash -c "source $HOME/.sdkman/bin/sdkman-init.sh
+      yes | sdk install java $JAVA_VERSION
+      JAVA_HOME="$(Build.SourcesDirectory)/pipeline/.sdkman/candidates/java/current"
+      echo "##vso[task.setvariable variable=javaHome]$JAVA_HOME"
+    displayName: Install Java with SDKMAN
+    workingDirectory: $(Build.SourcesDirectory)/pipeline
+    env:
+      JAVA_VERSION: 21-tem
   - task: SonarQubeAnalyze@8
     inputs:
-      jdkversion: 'JAVA_HOME_17_X64'
+      jdkversion: 'JAVA_HOME'
+    env:
+      JAVA_HOME: $(javaHome)
   # Publish Quality Gate Result task
   - task: SonarQubePublish@8
     inputs:
