@@ -63,7 +63,8 @@ steps:
     displayName: Build Python Package
   - bash: |
       curl -s "https://get.sdkman.io" | bash
-      bash -c "source ~/.sdkman/bin/sdkman-init.sh"
+      ls ~/.sdkman/bin
+      source ~/.sdkman/bin/sdkman-init.sh
       yes | sdk install java $JAVA_VERSION
       JAVA_HOME=~/.sdkman/candidates/java/current"
       echo "##vso[task.setvariable variable=javaHome]$JAVA_HOME"
