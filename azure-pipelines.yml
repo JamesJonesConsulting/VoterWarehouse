@@ -49,8 +49,9 @@ steps:
       SonarQube: 'SonarQube Home'
       scannerMode: 'cli'
       cliScannerVersion: '8.1.0.6389'
-      configMode: 'file'
-      cliSources: $(Build.SourcesDirectory)/pipeline
+      configMode: 'manual'
+      cliProjectKey: 'VoterWarehouse'
+      cliSources: '$(Build.SourcesDirectory)/pipeline'
   - bash: |
       python3 -m venv venv
       source venv/bin/activate
