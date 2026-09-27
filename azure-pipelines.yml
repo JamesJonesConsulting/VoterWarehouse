@@ -21,149 +21,154 @@ resources:
       image: nexus.jamesjonesconsulting.com:5443/jamesjonesconsulting/podman-dind-like:latest
       endpoint: JamesJonesConsultingDockerNexusHosted
       options: --userns=keep-id --privileged --user root
-pool: FedoraHosted
-container: podman-dind
 variables:
   - group: Connections
   - name: ARTIFACTORY_HOST
     value: nexus.jamesjonesconsulting.com
+stages:
+- stage: 'Build'
+  displayName: 'Build the application'
+  jobs:
+    - job: 'Build'
+      displayName: 'Build job'
+      pool: FedoraHosted
+      container: podman-dind
+      steps:
+        - checkout: self 
+          path: s/pipeline
+        - checkout: inventory
+          path: s/inventory
+        - checkout: vault
+          path: s/vault
 
-steps:
-  - checkout: self 
-    path: s/pipeline
-  - checkout: inventory
-    path: s/inventory
-  - checkout: vault
-    path: s/vault
+        - bash: |
+            eval $(ssh-agent); ssh-add <(echo "${SSH_KEY}" | base64 -d);
+            echo -n "${VAULT_KEY}" | base64 -d > $(Agent.TempDirectory)/.vault
+          workingDirectory: $(Build.SourcesDirectory)/pipeline
+          displayName: Connect to host and setup Azure DevOps agent with Podman
+          env:
+            SSH_KEY: $(default_ssh_key)
+            VAULT_KEY: $(ansible_vault_key)
+        - task: SonarQubePrepare@8
+          inputs:
+            SonarQube: 'SonarQube Home'
+            scannerMode: 'cli'
+            cliScannerVersion: '8.1.0.6389'
+            configMode: 'manual'
+            cliProjectKey: 'VoterWarehouse'
+            cliSources: '$(Build.SourcesDirectory)/pipeline'
+        - bash: |
+            python3 -m venv venv
+            source venv/bin/activate
+            python3 -m pip install --upgrade pip setuptools wheel "cython<3.0.0"
 
-  - bash: |
-      eval $(ssh-agent); ssh-add <(echo "${SSH_KEY}" | base64 -d);
-      echo -n "${VAULT_KEY}" | base64 -d > $(Agent.TempDirectory)/.vault
-    workingDirectory: $(Build.SourcesDirectory)/pipeline
-    displayName: Connect to host and setup Azure DevOps agent with Podman
-    env:
-      SSH_KEY: $(default_ssh_key)
-      VAULT_KEY: $(ansible_vault_key)
-  - task: SonarQubePrepare@8
-    inputs:
-      SonarQube: 'SonarQube Home'
-      scannerMode: 'cli'
-      cliScannerVersion: '8.1.0.6389'
-      configMode: 'manual'
-      cliProjectKey: 'VoterWarehouse'
-      cliSources: '$(Build.SourcesDirectory)/pipeline'
-  - bash: |
-      python3 -m venv venv
-      source venv/bin/activate
-      python3 -m pip install --upgrade pip setuptools wheel "cython<3.0.0"
+            python3 -m pip install .
 
-      python3 -m pip install .
+            python3 build.py
+          workingDirectory: $(Build.SourcesDirectory)/pipeline
+          displayName: Build Python Package
+        - bash: |
+            curl -s "https://get.sdkman.io" | bash
+            ls ~/.sdkman/bin
+            source ~/.sdkman/bin/sdkman-init.sh
+            yes | sdk install java $JAVA_VERSION
+            JAVA_HOME=~/.sdkman/candidates/java/current
+            echo "##vso[task.setvariable variable=javaHome]$JAVA_HOME"
+          displayName: Install Java with SDKMAN
+          workingDirectory: $(Build.SourcesDirectory)/pipeline
+          env:
+            JAVA_VERSION: 21-tem
+        - task: SonarQubeAnalyze@8
+          inputs:
+            jdkversion: 'JAVA_HOME'
+          env:
+            JAVA_HOME: $(javaHome)
+        # Publish Quality Gate Result task
+        - task: SonarQubePublish@8
+          inputs:
+            pollingTimeoutSec: '300'
+        - bash: |
+            if [[ "$BUILD_SOURCEBRANCH" == refs/tags/* ]]; then
+              tag="${BUILD_SOURCEBRANCH#refs/tags/}"
 
-      python3 build.py
-    workingDirectory: $(Build.SourcesDirectory)/pipeline
-    displayName: Build Python Package
-  - bash: |
-      curl -s "https://get.sdkman.io" | bash
-      ls ~/.sdkman/bin
-      source ~/.sdkman/bin/sdkman-init.sh
-      yes | sdk install java $JAVA_VERSION
-      JAVA_HOME=~/.sdkman/candidates/java/current
-      echo "##vso[task.setvariable variable=javaHome]$JAVA_HOME"
-    displayName: Install Java with SDKMAN
-    workingDirectory: $(Build.SourcesDirectory)/pipeline
-    env:
-      JAVA_VERSION: 21-tem
-  - task: SonarQubeAnalyze@8
-    inputs:
-      jdkversion: 'JAVA_HOME'
-    env:
-      JAVA_HOME: $(javaHome)
-  # Publish Quality Gate Result task
-  - task: SonarQubePublish@8
-    inputs:
-      pollingTimeoutSec: '300'
-  - bash: |
-      if [[ "$BUILD_SOURCEBRANCH" == refs/tags/* ]]; then
-        tag="${BUILD_SOURCEBRANCH#refs/tags/}"
+              echo "Tag: $tag"
+              echo "##vso[task.setvariable variable=gitRefType]tag"
+              echo "##vso[task.setvariable variable=gitRefName]$tag"
+            else
+              branch="${BUILD_SOURCEBRANCH#refs/heads/}"
 
-        echo "Tag: $tag"
-        echo "##vso[task.setvariable variable=gitRefType]tag"
-        echo "##vso[task.setvariable variable=gitRefName]$tag"
-      else
-        branch="${BUILD_SOURCEBRANCH#refs/heads/}"
+              # Replace "/" with "-"
+              branch="${branch//\//-}"
 
-        # Replace "/" with "-"
-        branch="${branch//\//-}"
+              # Get the application version
+              version="$(dist/voterwarehouse -v)"
 
-        # Get the application version
-        version="$(dist/voterwarehouse -v)"
+              # Prepend the version and "~" to the branch name
+              refName="${version}~${branch}"
 
-        # Prepend the version and "~" to the branch name
-        refName="${version}~${branch}"
+              echo "Branch: $refName"
+              echo "##vso[task.setvariable variable=gitRefType]branch"
+              echo "##vso[task.setvariable variable=gitRefName]$refName"
+            fi
+          displayName: Get version and normalized tag or branch name
+          workingDirectory: $(Build.SourcesDirectory)/pipeline
+        - bash: |
+            echo "Reference type: $(gitRefType)"
+            echo "Reference name: $(gitRefName)"
+            fpm -s dir -t rpm -n voterwarehouse -v $(gitRefName) --iteration $(Build.BuildNumber) \
+              --description "VoterWarehouse: Imports and Extracts Voter and History data" \
+              --url "https://github.com/jamjon3/VoterWarehouse" \
+              --license "LGPL3.0" --vendor "James Jones" \
+              --config-files /etc/VoterWarehouse/config.yml \
+              -p ./dist \
+              ./dist/voterwarehouse=/usr/bin/voterwarehouse \
+              ./config.sample.yml=/etc/VoterWarehouse/config.yml
+          displayName: Build the RPM package
+          workingDirectory: $(Build.SourcesDirectory)/pipeline
+        - bash: |
+            set -euo pipefail
 
-        echo "Branch: $refName"
-        echo "##vso[task.setvariable variable=gitRefType]branch"
-        echo "##vso[task.setvariable variable=gitRefName]$refName"
-      fi
-    displayName: Get version and normalized tag or branch name
-    workingDirectory: $(Build.SourcesDirectory)/pipeline
-  - bash: |
-      echo "Reference type: $(gitRefType)"
-      echo "Reference name: $(gitRefName)"
-      fpm -s dir -t rpm -n voterwarehouse -v $(gitRefName) --iteration $(Build.BuildNumber) \
-        --description "VoterWarehouse: Imports and Extracts Voter and History data" \
-        --url "https://github.com/jamjon3/VoterWarehouse" \
-        --license "LGPL3.0" --vendor "James Jones" \
-        --config-files /etc/VoterWarehouse/config.yml \
-        -p ./dist \
-        ./dist/voterwarehouse=/usr/bin/voterwarehouse \
-        ./config.sample.yml=/etc/VoterWarehouse/config.yml
-    displayName: Build the RPM package
-    workingDirectory: $(Build.SourcesDirectory)/pipeline
-  - bash: |
-      set -euo pipefail
+            rpm_path="$(find ./dist -maxdepth 1 -type f -name '*.rpm' -print -quit)"
 
-      rpm_path="$(find ./dist -maxdepth 1 -type f -name '*.rpm' -print -quit)"
+            if [[ -z "$rpm_path" ]]; then
+              echo "No RPM file found in ./dist" >&2
+              exit 1
+            fi
 
-      if [[ -z "$rpm_path" ]]; then
-        echo "No RPM file found in ./dist" >&2
-        exit 1
-      fi
+            rpm_name="$(basename "$rpm_path")"
 
-      rpm_name="$(basename "$rpm_path")"
+            echo "RPM path: $rpm_path"
+            echo "RPM name: $rpm_name"
 
-      echo "RPM path: $rpm_path"
-      echo "RPM name: $rpm_name"
+            # Make the path available to later Azure DevOps tasks
+            echo "##vso[task.setvariable variable=rpmPath]$rpm_path"
+            echo "##vso[task.setvariable variable=rpmName]$rpm_name"
+          displayName: Find produced RPM
+          workingDirectory: $(Build.SourcesDirectory)/pipeline
 
-      # Make the path available to later Azure DevOps tasks
-      echo "##vso[task.setvariable variable=rpmPath]$rpm_path"
-      echo "##vso[task.setvariable variable=rpmName]$rpm_name"
-    displayName: Find produced RPM
-    workingDirectory: $(Build.SourcesDirectory)/pipeline
+        - bash: |
+            set -euo pipefail
 
-  - bash: |
-      set -euo pipefail
+            repository="yum-hosted-arch/main/x86_64"
+            rpm_path="$(rpmPath)"
+            rpm_name="$(rpmName)"
 
-      repository="yum-hosted-arch/main/x86_64"
-      rpm_path="$(rpmPath)"
-      rpm_name="$(rpmName)"
+            upload_url="https://$(nexus_host)/repository/${repository}/${rpm_name}"
 
-      upload_url="https://$(nexus_host)/repository/${repository}/${rpm_name}"
+            echo "Uploading ${rpm_name} to ${repository}..."
+            echo "${NEXUS_USERNAME}"
+            curl \
+              --fail \
+              --silent \
+              --show-error \
+              --location \
+              --user "${NEXUS_USERNAME}:${NEXUS_PASSWORD}" \
+              --upload-file "$rpm_path" \
+              "$upload_url"
 
-      echo "Uploading ${rpm_name} to ${repository}..."
-      echo "${NEXUS_USERNAME}"
-      curl \
-        --fail \
-        --silent \
-        --show-error \
-        --location \
-        --user "${NEXUS_USERNAME}:${NEXUS_PASSWORD}" \
-        --upload-file "$rpm_path" \
-        "$upload_url"
-
-      echo "Successfully uploaded ${rpm_name}"
-    displayName: Publish RPM to Nexus
-    workingDirectory: $(Build.SourcesDirectory)/pipeline
-    env:
-      NEXUS_USERNAME: $(nexus_publish_user)
-      NEXUS_PASSWORD: $(nexus_publish_pass)
+            echo "Successfully uploaded ${rpm_name}"
+          displayName: Publish RPM to Nexus
+          workingDirectory: $(Build.SourcesDirectory)/pipeline
+          env:
+            NEXUS_USERNAME: $(nexus_publish_user)
+            NEXUS_PASSWORD: $(nexus_publish_pass)
