@@ -197,7 +197,8 @@ stages:
           displayName: Build Docker Image
           inputs:
             command: build
-            repository: nexus.jamesjonesconsulting.com:5443/ymdllc/voterwarehouse-container/$(buildVersion)
+            repository: ymdllc/voterwarehouse-container/$(buildVersion)
+            containerRegistry: 'JamesJonesConsultingDockerNexusHosted'
             tags: |
               $(buildTag)
             dockerfile: '$(Build.SourcesDirectory)/pipeline/Dockerfile'
@@ -212,7 +213,8 @@ stages:
             displayName: Build Docker Image
             inputs:
               command: build
-              repository: nexus.jamesjonesconsulting.com:5443/ymdllc/voterwarehouse-container/$(buildVersion)
+              repository: ymdllc/voterwarehouse-container/$(buildVersion)
+              containerRegistry: 'JamesJonesConsultingDockerNexusHosted'
               tags: |
                 latest
               dockerfile: '$(Build.SourcesDirectory)/pipeline/Dockerfile.buildImage'
@@ -228,7 +230,8 @@ stages:
           # condition: eq(variables['Build.SourceBranch'], 'refs/heads/main')
           inputs:
             command: push
-            repository: nexus.jamesjonesconsulting.com:5443/ymdllc/voterwarehouse-container/$(buildVersion)
+            repository: ymdllc/voterwarehouse-container/$(buildVersion)
+            containerRegistry: 'JamesJonesConsultingDockerNexusHosted'
             tags: |
               $(buildTag)
         - ${{ if eq(variables['buildType'], 'tag') }}:
@@ -237,7 +240,8 @@ stages:
             # condition: eq(variables['Build.SourceBranch'], 'refs/heads/main')
             inputs:
               command: push
-              repository: nexus.jamesjonesconsulting.com:5443/ymdllc/voterwarehouse-container/$(buildVersion)
+              repository: ymdllc/voterwarehouse-container/$(buildVersion)
+              containerRegistry: 'JamesJonesConsultingDockerNexusHosted'
               tags: |
                 latest
 
