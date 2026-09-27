@@ -88,29 +88,31 @@ stages:
           inputs:
             pollingTimeoutSec: '300'
         - bash: |
+            # Get the application version
+            version="$(dist/voterwarehouse -v)"
             if [[ "$BUILD_SOURCEBRANCH" == refs/tags/* ]]; then
               tag="${BUILD_SOURCEBRANCH#refs/tags/}"
 
               echo "Tag: $tag"
-              echo "##vso[task.setvariable variable=gitRefType]tag"
-              echo "##vso[task.setvariable variable=gitRefName]$tag"
+              echo "##vso[task.setvariable variable=gitRefType;isOutput=true]tag"
+              echo "##vso[task.setvariable variable=gitRefName;isOutput=true]$tag"
+              echo "##vso[task.setvariable variable=version;isOutput=true]$version"
             else
               branch="${BUILD_SOURCEBRANCH#refs/heads/}"
 
               # Replace "/" with "-"
               branch="${branch//\//-}"
 
-              # Get the application version
-              version="$(dist/voterwarehouse -v)"
-
               # Prepend the version and "~" to the branch name
               refName="${version}~${branch}"
 
               echo "Branch: $refName"
-              echo "##vso[task.setvariable variable=gitRefType]branch"
-              echo "##vso[task.setvariable variable=gitRefName]$refName"
+              echo "##vso[task.setvariable variable=gitRefType;isOutput=true]branch"
+              echo "##vso[task.setvariable variable=gitRefName;isOutput=true]$refName"
+              echo "##vso[task.setvariable variable=version;isOutput=true]$version"
             fi
           displayName: Get version and normalized tag or branch name
+          name: GetVersionInfo
           workingDirectory: $(Build.SourcesDirectory)/pipeline
         - bash: |
             echo "Reference type: $(gitRefType)"
@@ -175,8 +177,71 @@ stages:
     - job: 'Image'
       dependsOn:
         - 'Build'
+      variables:
+        buildTag: $[ dependencies.Build.outputs['GetVersionInfo.gitRefName'] ]
+        buildType: $[ dependencies.Build.outputs['GetVersionInfo.gitRefType'] ]  
+        buildVersion: $[ dependencies.Build.outputs['GetVersionInfo.version'] ]
       displayName: 'Build and Publish docker image'
       pool: FedoraHosted
       steps:
         - checkout: self 
           path: s/pipeline
+
+        - task: Docker@2
+          displayName: Docker Login
+          inputs:
+            command: login
+            containerRegistry: 'JamesJonesConsultingDockerNexusHosted'
+
+        - task: Docker@2
+          displayName: Build Docker Image
+          inputs:
+            command: build
+            repository: nexus.jamesjonesconsulting.com:5443/ymdllc/voterwarehouse-container/$(buildVersion)
+            tags: |
+              $(buildTag)
+            dockerfile: '$(Build.SourcesDirectory)/pipeline/Dockerfile'
+            # arguments: |
+            #   --sbom=true
+            #   --attest type=provenance
+            #   --cache-from $(imageName):latest
+          # env:
+          #   DOCKER_BUILDKIT: 1
+        - ${{ if eq(variables['buildType'], 'tag') }}:
+          - task: Docker@2
+            displayName: Build Docker Image
+            inputs:
+              command: build
+              repository: nexus.jamesjonesconsulting.com:5443/ymdllc/voterwarehouse-container/$(buildVersion)
+              tags: |
+                latest
+              dockerfile: '$(Build.SourcesDirectory)/pipeline/Dockerfile'
+              # arguments: |
+              #   --sbom=true
+              #   --attest type=provenance
+              #   --cache-from $(imageName):latest
+            # env:
+            #   DOCKER_BUILDKIT: 1
+
+        - task: Docker@2
+          displayName: Push Docker Image
+          # condition: eq(variables['Build.SourceBranch'], 'refs/heads/main')
+          inputs:
+            command: push
+            repository: nexus.jamesjonesconsulting.com:5443/ymdllc/voterwarehouse-container/$(buildVersion)
+            tags: |
+              $(buildTag)
+        - ${{ if eq(variables['buildType'], 'tag') }}:
+          - task: Docker@2
+            displayName: Push Docker Image
+            # condition: eq(variables['Build.SourceBranch'], 'refs/heads/main')
+            inputs:
+              command: push
+              repository: nexus.jamesjonesconsulting.com:5443/ymdllc/voterwarehouse-container/$(buildVersion)
+              tags: |
+                latest
+
+        # Optional: logout for self-hosted agents
+        # - script: docker logout
+        #   displayName: Docker Logout (Self-hosted only)
+        #   condition: ne(variables['Agent.OS'], 'Windows_NT')
