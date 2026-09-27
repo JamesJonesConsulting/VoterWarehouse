@@ -1,0 +1,9 @@
+[jamesjonesconsulting-main]
+name=General packages hosted by James Jones Consulting
+baseurl=https://nexus.jamesjonesconsulting.com/repository/yum-hosted-arch/main/$basearch/
+enabled=1
+gpgcheck=0
+gpgkey=file:///etc/pki/rpm-gpg/RPM-GPG-KEY-jamesjonesconsulting
+type=rpm-md
+repo_gpgcheck=0
+priority=1

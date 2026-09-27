@@ -1,1 +1,6 @@
 FROM registry.fedoraproject.org/fedora:latest
+
+COPY ./nexus-main.repo /etc/yum.repos.d/
+
+RUN dnf clean all && \
+  dnf install voterwarehouse -y
