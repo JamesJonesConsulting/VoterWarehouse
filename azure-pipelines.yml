@@ -178,7 +178,7 @@ stages:
       dependsOn:
         - 'Build'
       variables:
-        buildTag: $[ dependencies.Build.outputs['GetVersionInfo.gitRefName'] ]
+        buildTag: $[ replace(dependencies.Build.outputs['GetVersionInfo.gitRefName'], '~', '-') ]
         buildType: $[ dependencies.Build.outputs['GetVersionInfo.gitRefType'] ]  
         buildVersion: $[ dependencies.Build.outputs['GetVersionInfo.version'] ]
       displayName: 'Build and Publish docker image'
@@ -201,7 +201,7 @@ stages:
             containerRegistry: 'JamesJonesConsultingDockerNexusHosted'
             tags: |
               $(buildTag)
-            dockerfile: '$(Build.SourcesDirectory)/pipeline/Dockerfile'
+            dockerfile: '$(Build.SourcesDirectory)/Dockerfile.buildImage'
             # arguments: |
             #   --sbom=true
             #   --attest type=provenance
@@ -217,7 +217,7 @@ stages:
               containerRegistry: 'JamesJonesConsultingDockerNexusHosted'
               tags: |
                 latest
-              dockerfile: '$(Build.SourcesDirectory)/pipeline/Dockerfile'
+              dockerfile: '$(Build.SourcesDirectory)/Dockerfile.buildImage'
               # arguments: |
               #   --sbom=true
               #   --attest type=provenance
