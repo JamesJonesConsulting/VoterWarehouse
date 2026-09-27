@@ -173,6 +173,8 @@ stages:
             NEXUS_USERNAME: $(nexus_publish_user)
             NEXUS_PASSWORD: $(nexus_publish_pass)
     - job: 'Image'
+      dependsOn:
+        - 'Build'
       displayName: 'Build and Publish docker image'
       pool: FedoraHosted
       steps:
