@@ -178,7 +178,7 @@ stages:
       dependsOn:
         - 'Build'
       variables:
-        buildTag: $[ dependencies.Build.outputs['GetVersionInfo.gitRefName'] ]
+        buildTag: $[ replace(dependencies.Build.outputs['GetVersionInfo.gitRefName'], '~', '-') ]
         buildType: $[ dependencies.Build.outputs['GetVersionInfo.gitRefType'] ]  
         buildVersion: $[ dependencies.Build.outputs['GetVersionInfo.version'] ]
       displayName: 'Build and Publish docker image'
