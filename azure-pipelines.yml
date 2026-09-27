@@ -115,9 +115,9 @@ stages:
           name: GetVersionInfo
           workingDirectory: $(Build.SourcesDirectory)/pipeline
         - bash: |
-            echo "Reference type: $(gitRefType)"
-            echo "Reference name: $(gitRefName)"
-            fpm -s dir -t rpm -n voterwarehouse -v $(gitRefName) --iteration $(Build.BuildNumber) \
+            echo "Reference type: $(GetVersionInfo.gitRefType)"
+            echo "Reference name: $(GetVersionInfo.gitRefName)"
+            fpm -s dir -t rpm -n voterwarehouse -v $(GetVersionInfo.gitRefName) --iteration $(Build.BuildNumber) \
               --description "VoterWarehouse: Imports and Extracts Voter and History data" \
               --url "https://github.com/jamjon3/VoterWarehouse" \
               --license "LGPL3.0" --vendor "James Jones" \
