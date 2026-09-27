@@ -200,7 +200,7 @@ stages:
             repository: nexus.jamesjonesconsulting.com:5443/ymdllc/voterwarehouse-container/$(buildVersion)
             tags: |
               $(buildTag)
-            dockerfile: '$(Build.SourcesDirectory)/pipeline/Dockerfile.buildImage'
+            dockerfile: '$(Build.SourcesDirectory)/Dockerfile.buildImage'
             # arguments: |
             #   --sbom=true
             #   --attest type=provenance
