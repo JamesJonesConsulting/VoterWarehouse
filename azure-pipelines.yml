@@ -172,3 +172,9 @@ stages:
           env:
             NEXUS_USERNAME: $(nexus_publish_user)
             NEXUS_PASSWORD: $(nexus_publish_pass)
+    - job: 'Image'
+      displayName: 'Build and Publish docker image'
+      pool: FedoraHosted
+      steps:
+        - checkout: self 
+          path: s/pipeline
