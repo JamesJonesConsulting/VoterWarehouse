@@ -24,7 +24,7 @@ setup(
     python_requires=">=3.11",
     scripts=['voterwarehouse.py'],
     install_requires=[
-        "PyMySQL==1.1.1",
+        "PyMySQL==1.2.3",
         "PyYAML==6.0.1",
         "sphinx==7.2.5",
         "nose==1.3.7",
